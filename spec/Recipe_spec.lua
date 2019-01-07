@@ -1,6 +1,7 @@
 local inspect = require "inspect"
 require "busted"
 local Recipe = require "Recipe"
+local VirtualRecipe = require "VirtualRecipe"
 
 local function setup_mocks()
   _G.game = {
@@ -34,19 +35,21 @@ describe("A Recipe should", function()
     setup_mocks()
     plate_recipe = Recipe.new("iron-plate")
     gear_recipe = Recipe.new("iron-gear-wheel")
-    gear_recipe:add_constraint(plate_recipe, "iron-plate")
+    plate_recipe:add_constraint(gear_recipe, "iron-plate")
     sp1_recipe = Recipe.new("science-pack-1")
-    sp1_recipe:add_constraint(gear_recipe, "iron-gear-wheel")
+    gear_recipe:add_constraint(sp1_recipe, "iron-gear-wheel")
   end)
 
   describe("adjust rates of constrained recipes", function()
     it("that are direct descendents", function()
-      gear_recipe:set_rate_by_item("iron-gear-wheel", 1)
+      local constraint = VirtualRecipe.new("iron-gear-wheel", -1)
+      gear_recipe:add_constraint(constraint, "iron-gear-wheel")
       assert.is_equal(2, plate_recipe.rate) 
     end)
 
     it("that are indirect descendents", function()
-      sp1_recipe:set_rate_by_item("science-pack-1", 1)
+      local constraint = VirtualRecipe.new("science-pack-1", -1)
+      sp1_recipe:add_constraint(constraint, "science-pack-1")
       assert.is_equal(2, plate_recipe.rate) 
     end)
   end)

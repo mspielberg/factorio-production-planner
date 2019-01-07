@@ -48,6 +48,7 @@ local meta = { __index = ProductionLine }
 
 function M.new()
   local self = {
+    crafting_machines = {},
     recipes = {},
     constraints = {},
   }

@@ -15,6 +15,30 @@ local function normalize_items(proto)
   return out
 end
 
+local function item_constraints(self)
+  local out = {}
+  for _, constraint in pairs(self.constrained_by) do
+    local constraining_recipe = constraint.recipe
+    local item_name = constraint.item
+    out[item_name] = (out[item_name] or 0) -
+      constraining_recipe:get_item_rates()[item_name]
+  end
+  return out
+end
+
+local function update_rate(self)
+  local item_constraints = item_constraints(self)
+  local new_rate = 0
+  for item_name, required_rate in pairs(item_constraints) do
+    local required_recipe_rate = required_rate / self.items[item_name]
+    if required_recipe_rate > new_rate then
+      new_rate = required_recipe_rate
+    end
+  end
+  self:set_recipe_rate(new_rate)
+end
+
+
 local Recipe = {}
 
 function Recipe:add_constraint(recipe, item_name)
@@ -23,8 +47,9 @@ function Recipe:add_constraint(recipe, item_name)
       return
     end
   end
-  self.constrains[#self.constrains+1] = { recipe = recipe, item = item_name }
-  recipe.constrained_by[#recipe.constrained_by] = { recipe = self, item = item_name }
+  self.constrained_by[#self.constrained_by+1] = { recipe = recipe, item = item_name }
+  recipe.constrains[#recipe.constrains] = { recipe = self, item = item_name }
+  update_rate(self)
 end
 
 function Recipe:remove_constraint(recipe, item_name)
@@ -40,10 +65,7 @@ function Recipe:remove_constraint(recipe, item_name)
       return
     end
   end
-end
-
-function Recipe:reset()
-  self.rate = 0
+  update_rate(self)
 end
 
 function Recipe:is_constrained_by(other)
@@ -68,14 +90,8 @@ function Recipe:set_recipe_rate(recipe_rate)
   if recipe_rate == self.rate then return end
   self.rate = recipe_rate
   for _, constraint in pairs(self.constrains) do
-    local item_name = constraint.item
-    local item_rate = recipe_rate * self.items[item_name]
-    constraint.recipe:set_rate_by_item(item_name, -item_rate)
+    constraint.recipe:update_rate()
   end
-end
-
-function Recipe:set_rate_by_item(name, item_rate)
-  self:set_recipe_rate(item_rate / self.items[name])
 end
 
 local M = {}
