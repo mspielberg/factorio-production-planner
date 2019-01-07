@@ -1,8 +1,33 @@
+local Dispatcher = require "gui.Dispatcher"
+local inspect = require "inspect"
 local Planner = require "Planner"
 local PlannerFrame = require "gui.PlannerFrame"
+local Recipe = require "Recipe"
 local RecipeFlowController = require "gui.RecipeFlowController"
 
+local function on_remove_recipe_button(self, recipe_index)
+  self.planner:remove_recipe(recipe_index)
+
+  local recipe_controllers = self.recipe_controllers
+  recipe_controllers[recipe_index]:destroy()
+
+  local num_controllers = #recipe_controllers
+  for i=num_controllers-1, recipe_index, -1 do
+    recipe_controllers[i] = recipe_controllers[i+1]
+    recipe_controllers[i]:set_index(i)
+  end
+  recipe_controllers[num_controllers] = nil
+end
+
 local PlannerFrameController = {}
+
+function PlannerFrameController:on_gui_click(event)
+  local element = event.element
+  if element.name == "remove_recipe_button" then
+    on_remove_recipe_button(self, event.context.recipe_index)
+    return true
+  end
+end
 
 function PlannerFrameController:toggle_show_hide()
   local style = self.view.gui.style
@@ -23,37 +48,46 @@ function PlannerFrameController:set_recipes(recipes)
   end
 end
 
-function PlannerFrameController:on_add_recipe_button()
+function PlannerFrameController:add_recipe(recipe_name)
+  local recipe = Recipe.new(recipe_name)
+  self.planner:change_recipe(nil, recipe)
+  log(inspect(self.planner))
+
+  local recipe_flow = self.view:add_recipe()
   local index = #self.recipe_controllers + 1
-  self.recipe_controllers[index] =
-    RecipeFlowController.new(self, nil)
+  local recipe_controller = RecipeFlowController.new(recipe_flow, index)
+  recipe_controller:set_production_line(self.planner.current_line, index)
+  self.recipe_controllers[index] = recipe_controller
 end
 
-function PlannerFrameController:on_recipe_changed(old_recipe, recipe)
-  self.planner:change_recipe(old_recipe, recipe)
+function PlannerFrameController:change_recipe(index, recipe_name)
+  local recipe = Recipe.new(recipe_name)
+  self.planner:change_recipe(index, recipe)
+  self.recipe_controllers[index]:update()
 end
 
 local M = {}
 local meta = { __index = PlannerFrameController }
 
-function M.new(view)
+function M.new(view, recipe_picker)
   local self = {
     planner = Planner.new(),
     view = view,
+
+    recipe_picker = recipe_picker,
     recipe_controllers = {},
   }
-  view:set_controller(self)
   return M.restore(self)
 end
 
 function M.restore(self)
-  setmetatable(self, meta)
   PlannerFrame.restore(self.view)
   Planner.restore(self.planner)
   for _, recipe_controller in pairs(self.recipe_controllers) do
-    RecipeController.restore(recipe_controller)
+    RecipeFlowController.restore(recipe_controller)
   end
-  return self
+  Dispatcher.register(self, self.view.gui)
+  return setmetatable(self, meta)
 end
 
 return M

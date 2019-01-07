@@ -1,58 +1,5 @@
 local inspect = require "inspect"
 
-local M = {}
-
-local Recipe = {}
-
---[[
-local function to_set(list)
-  local out = {}
-  for _, e in pairs(list) do
-    out[e] = true
-  end
-  return out
-end
-
-local function catalysts(ingredients, products)
-end
-
-local function normalize_ingredients(ingredients)
-  local out = {}
-  for _, ingredient in pairs(ingredients) do
-    out[ingredient.name] = ingredient.amount
-  end
-  return out
-end
-
-local function normalize_products(products)
-  local out = {}
-  for _, product in pairs(products) do
-    local amount = product.amount or ((product.amount_max + product.amount_min) / 2 * product.probability)
-    out[product.name] = amount
-  end
-  return out
-end
-
---- modifies iset and pset in-place to remove catalysts
-local function normalize_catalysts(iset, pset)
-  for item, iamount in pairs(iset) do
-    local pamount = pset[item]
-    if pamount then
-      if pamount > iamount then
-        pset[item] = pamount - iamount
-        iset[item] = nil
-      elseif iamount > pamount then
-        iset[item] = iamount - pamount
-        pset[item] = nil
-      else
-        iset[item] = nil
-        pset[item] = nil
-      end
-    end
-  end
-end
-]]
-
 local function normalize_items(proto)
   local out = {}
   for _, ingredient in pairs(proto.ingredients) do
@@ -68,26 +15,7 @@ local function normalize_items(proto)
   return out
 end
 
-function M.new(name)
-  local proto = game.recipe_prototypes[name]
-  if not proto then return nil end
-
-  local self = {
-    name = name,
-    rate = 0,
-    energy = proto.energy,
-    ingredients = ingredients,
-    products = products,
-    items = normalize_items(proto),
-    constrains = {},
-    constrained_by = {},
-  }
-  return M.restore(self)
-end
-
-function M.restore(self)
-  return setmetatable(self, { __index = Recipe })
-end
+local Recipe = {}
 
 function Recipe:add_constraint(recipe, item_name)
   for k, constraint in pairs(self.constrains) do
@@ -148,6 +76,27 @@ end
 
 function Recipe:set_rate_by_item(name, item_rate)
   self:set_recipe_rate(item_rate / self.items[name])
+end
+
+local M = {}
+
+function M.new(name)
+  local proto = game.recipe_prototypes[name]
+  if not proto then return nil end
+
+  local self = {
+    name = name,
+    rate = 0,
+    energy = proto.energy,
+    items = normalize_items(proto),
+    constrains = {},
+    constrained_by = {},
+  }
+  return M.restore(self)
+end
+
+function M.restore(self)
+  return setmetatable(self, { __index = Recipe })
 end
 
 return M

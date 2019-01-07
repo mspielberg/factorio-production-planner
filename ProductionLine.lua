@@ -10,8 +10,7 @@ local function get_recipe_index(self, recipe)
   end
 end
 
-function ProductionLine:change_recipe(old_recipe, recipe)
-  local index = get_recipe_index(self, old_recipe)
+function ProductionLine:change_recipe(index, recipe)
   if index then
     self.recipes[index] = recipe
   else
@@ -19,9 +18,8 @@ function ProductionLine:change_recipe(old_recipe, recipe)
   end
 end
 
-function ProductionLine:remove_recipe(recipe)
-  local index = get_recipe_index(self, recipe)
-  self.recipes[index] = nil
+function ProductionLine:remove_recipe(index)
+  table.remove(self.recipes, index)
 end
 
 function ProductionLine:add_constraint(recipe, item, amount)

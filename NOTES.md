@@ -15,3 +15,7 @@ restore view, linking to existing gui
 create controller
 controllers initialize state from global
 link controllers to existing gui
+
+views:
+  hold references to GuiComponents
+  do NOT hold references to controllers

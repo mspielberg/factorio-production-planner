@@ -1,8 +1,7 @@
-local Dispatcher = require "gui.Dispatcher"
 local inspect = require "inspect"
 
 local function create(self, parent)
-  self.picker_flow = parent.add{
+  self.gui = parent.add{
     name = "recipe_picker",
     type = "flow",
     direction = "vertical",
@@ -49,7 +48,6 @@ local function recipe_button_tooltip(recipe)
     items_localised_string(recipe.products),
     items_localised_string(recipe.ingredients),
   }
-  log(inspect(tooltip))
   return tooltip
 end
 
@@ -69,17 +67,11 @@ local function add_subgroup_flow(self, parent, subgroup)
       sprite = "recipe/"..recipe_name,
       tooltip = recipe_button_tooltip(recipe.lua_recipe),
     }
-    Dispatcher.register(
-      defines.events.on_gui_click,
-      recipe_button,
-      function(event)
-        self.controller:on_recipe_button(recipe_name)
-      end)
   end
 end
 
 local function add_group_flow(self, group)
-  local scroll = self.picker_flow.add{
+  local scroll = self.gui.add{
     name = group.name,
     type = "scroll-pane",
     horizontal_scroll_policy = "never",
@@ -88,10 +80,12 @@ local function add_group_flow(self, group)
   scroll.style.width = 383
   self.group_flow = scroll
   local group_flow = scroll.add{
+    name = "subgroups",
     type = "flow",
     direction = "vertical",
     style = "slot_table_spacing_vertical_flow",
   }
+  group_flow.enabled = false
 
   for _, subgroup in ipairs(group.subgroups) do
     add_subgroup_flow(self, group_flow, subgroup)
@@ -99,32 +93,12 @@ local function add_group_flow(self, group)
 end
 
 local function remove_group_flow(self)
-  for _, subgroup_flow in ipairs(self.group_flow.children) do
-    for _, recipe_button in ipairs(subgroup_flow.children) do
-      Dispatcher.register(
-        defines.events.on_gui_click,
-        recipe_button,
-        nil)
-    end
-  end
   self.group_flow.destroy()
   self.group_flow = nil
 end
 
-local function select_group(self, group_name)
-  local current_group_flow = self.group_flow
-  if current_group_flow and current_group_flow.name == group_name then return end
-
-  if current_group_flow then
-    self.groups_flow[current_group_flow.name].style = "image_tab_slot"
-    remove_group_flow(self)
-  end
-  self.groups_flow[group_name].style = "image_tab_selected_slot"
-  add_group_flow(self, self.groups[group_name])
-end
-
 local function add_groups_flow(self, groups)
-  local flow = self.picker_flow.add{
+  local flow = self.gui.add{
     name = "groups",
     type = "flow",
     direction = "horizontal",
@@ -141,24 +115,11 @@ local function add_groups_flow(self, groups)
       sprite = "item-group/"..group_name,
       tooltip = {"item-group-name."..group_name},
     }
-    Dispatcher.register(
-      defines.events.on_gui_click,
-      group_button,
-      function(event)
-        select_group(self, group_name)
-      end)
   end
 end
 
 local function remove_groups_flow(self)
-  local groups_flow = self.picker_flow.groups
-  for _, group_button in ipairs(groups_flow.children) do
-    Dispatcher.register(
-      defines.events.on_gui_click,
-      group_button,
-      nil)
-  end
-  groups_flow.destroy()
+  self.groups_flow.destroy()
   self.groups_flow = nil
 end
 
@@ -223,13 +184,9 @@ local function group_recipes(recipes)
   return groups
 end
 
-local RecipePickerView = {}
+local RecipePickerFlow = {}
 
-function RecipePickerView:set_controller(controller)
-  self.controller = controller
-end
-
-function RecipePickerView:set_recipes(recipes)
+function RecipePickerFlow:set_recipes(recipes)
   if self.group_flow then
     remove_group_flow(self)
   end
@@ -237,32 +194,42 @@ function RecipePickerView:set_recipes(recipes)
     remove_groups_flow(self)
   end
 
-
   local groups = group_recipes(recipes)
   self.groups = groups
   if next(groups) then
     local initial_group_name = groups[1].name
     add_groups_flow(self, groups)
     reindex_by_name(groups)
-    select_group(self, initial_group_name)
+    self:select_group(initial_group_name)
   end
 end
 
+function RecipePickerFlow:select_group(group_name)
+  local current_group_flow = self.group_flow
+  if current_group_flow and current_group_flow.name == group_name then return end
+
+  if current_group_flow then
+    self.groups_flow[current_group_flow.name].style = "image_tab_slot"
+    remove_group_flow(self)
+  end
+  self.groups_flow[group_name].style = "image_tab_selected_slot"
+  add_group_flow(self, self.groups[group_name])
+end
+
+
 local M = {}
-local meta = { __index = RecipePickerView }
+local meta = { __index = RecipePickerFlow }
 
 function M.new(parent)
   local self = {
-    controller = nil,
     active_group = nil,
-    picker_flow = nil,
+    gui = nil,
     groups_flow = nil,
     group_flow = nil,
     groups = {},
   }
   create(self, parent)
-  M.restore(self)
-  return self
+  return M.restore(self)
 end
 
 function M.restore(self)

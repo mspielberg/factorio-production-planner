@@ -1,18 +1,7 @@
+local Dispatcher = require "gui.Dispatcher"
 local inspect = require "inspect"
-local RecipePickerView = require "gui.RecipePickerView"
-
-local RecipePickerController = {}
-
-function RecipePickerController:on_group_button(group_name)
-  self.view:select_group(group_name)
-end
-
-function RecipePickerController:on_recipe_button(recipe_name)
-  game.print("selected recipe "..recipe_name)
-end
-
-local M = {}
-local meta = { __index = RecipePickerController }
+local RecipePickerFrame = require "gui.RecipePickerFrame"
+local RecipePickerFlow = require "gui.RecipePickerFlow"
 
 local function accepted_recipes(force, filter)
   local out = {}
@@ -24,18 +13,49 @@ local function accepted_recipes(force, filter)
   return out
 end
 
-function M.new(parent, force, filter)
+local RecipePickerController = {}
+
+function RecipePickerController:on_gui_click(event)
+  local element = event.element
+  if element.parent and element.parent.name == "groups" then
+    self.picker_flow:select_group(element.name)
+    return true
+  else
+    event.context.type = "RecipePicker"
+    event.context.recipe_name = element.name
+  end
+end
+
+function RecipePickerController:set_filter(filter)
+  local force = self.player.force
   local recipes = accepted_recipes(force, filter)
-  log(inspect(recipes))
+  self.picker_flow:set_recipes(recipes)
+end
+
+function RecipePickerController:show()
+  self.picker_frame:show()
+end
+
+function RecipePickerController:hide()
+  self.picker_frame:hide()
+end
+
+local M = {}
+local meta = { __index = RecipePickerController }
+
+function M.new(frame, flow, player)
   local self = {
-    view = nil,
+    picker_frame = frame,
+    picker_flow = flow,
+    player = player,
   }
-  self.view = RecipePickerView.new(self, parent, recipes)
   return M.restore(self)
 end
 
 function M.restore(self)
-  RecipePickerView.restore(self.view)
+  RecipePickerFrame.restore(self.picker_frame)
+  RecipePickerFlow.restore(self.picker_flow)
+  Dispatcher.register(self, self.picker_flow.gui)
   return setmetatable(self, meta)
 end
 

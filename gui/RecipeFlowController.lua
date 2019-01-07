@@ -1,57 +1,49 @@
 local CraftingMachine = require "CraftingMachine"
+local Dispatcher = require "gui.Dispatcher"
 local Recipe = require "Recipe"
 local RecipeFlow = require "gui.RecipeFlow"
 
-local IDLE = 0
-local LINKING = 1
+local RecipeFlowController = {}
 
-local RecipeController = {}
-
-function RecipeController:on_recipe_button_changed()
-  local old_recipe = self.recipe
-  local new_recipe_name = self.view.recipe_button.elem_value
-
-  local recipe = Recipe.new(new_recipe_name)
-  self.recipe = recipe
-  recipe:set_recipe_rate(10)
-  self.view:set_recipe(recipe)
-
-  local crafting_machine = CraftingMachine.default_for(recipe)
-  self.crafting_machine = crafting_machine
-  self.view:set_crafting_machine(crafting_machine)
-
-  self.planner_controller:on_recipe_changed(old_recipe, recipe)
+function RecipeFlowController:set_production_line(production_line)
+  self.view.production_line = production_line
+  self.view:update()
 end
 
-function RecipeController:on_item_button(item_name)
-  if self.state == IDLE then
-    self.planner_controller:setup_linking(self, item_name)
-  elseif self.state == LINKING then
-    self.planner_controller:complete_linking(self)
-  end
+function RecipeFlowController:set_index(index)
+  self.index = index
+  self.view.index = index
+  self.view:update()
 end
 
-function RecipeController:destroy()
+function RecipeFlowController:on_gui_click(event)
+  event.context.recipe_index = self.index
+end
+
+function RecipeFlowController:update()
+  self.view:update()
+end
+
+function RecipeFlowController:destroy()
   self.view:destroy()
 end
 
 local M = {}
-local meta = { __index = RecipeController }
+local meta = { __index = RecipeFlowController }
 
-function M.new(planner_controller, view, recipe)
+function M.new(view, index)
   local self = {
-    planner_controller = planner_controller,
     view = view,
-    recipe = recipe,
+    index = index,
     crafting_machine = nil,
-    state = IDLE,
   }
-  self.view:set_recipe(recipe)
+  self.view.index = index
   return M.restore(self)
 end
 
 function M.restore(self)
-  RecipeView.restore(self.view)
+  RecipeFlow.restore(self.view)
+  Dispatcher.register(self, self.view.gui)
   return setmetatable(self, meta)
 end
 

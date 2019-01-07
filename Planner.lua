@@ -2,8 +2,12 @@ local ProductionLine = require "ProductionLine"
 
 local Planner = {}
 
-function Planner:change_recipe(old_recipe, recipe)
-  self.current_line:change_recipe(old_recipe, recipe)
+function Planner:change_recipe(index, recipe)
+  self.current_line:change_recipe(index, recipe)
+end
+
+function Planner:remove_recipe(index)
+  self.current_line:remove_recipe(index)
 end
 
 function Planner:current_recipes()

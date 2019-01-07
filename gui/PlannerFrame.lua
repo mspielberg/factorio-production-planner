@@ -1,32 +1,44 @@
-local mod_gui = require "mod-gui"
-local Dispatcher = require "gui.Dispatcher"
 local RecipeFlow = require "gui.RecipeFlow"
+local style = require "gui.style"
 
-local function create_header_row(recipes_table)
-  recipes_table.add{
+local function create_header_flow(parent)
+  local flow = parent.add{
+    name = "header",
+    type = "flow",
+    direction = "horizontal",
+  }
+
+  local recipe_header = flow.add{
     name = "recipe_label",
     type = "label",
-    caption = {"planner-gui.recipe-header"},
+    --caption = {"planner-gui.recipe-header"},
   }
-  recipes_table.add{
+  recipe_header.style.width = style.dimensions.recipe_column_width
+
+  local assembling_machine_header = flow.add{
     name = "machine_label",
     type = "label",
-    caption = {"planner-gui.machine-header"},
+    --caption = {"planner-gui.machine-header"},
   }
-  recipes_table.machine_label.style.align = "center"
-  recipes_table.add{
+  assembling_machine_header.style.width =
+    style.dimensions.assembling_machine_column_width
+
+  local ingredients_header = flow.add{
     name = "ingredients_label",
     type = "label",
     caption = {"planner-gui.ingredients-header"},
   }
-  recipes_table.add{
+  ingredients_header.style.width = style.dimensions.ingredients_column_width
+
+  local products_header = flow.add{
     name = "products_label",
     type = "label",
     caption = {"planner-gui.products-header"},
   }
+  products_header.style.width = style.dimensions.products_column_width
 end
 
-local function add_recipes_table(self, parent)
+local function add_recipes_flow(self, parent)
   local flow = parent.add{
     name = "recipes_flow",
     type = "flow",
@@ -37,18 +49,22 @@ local function add_recipes_table(self, parent)
     type = "sprite-button",
     sprite = "utility/add",
   }
-  local scroll = flow.add{
+  local scroll_flow = flow.add{
+    name = "right",
+    type = "flow",
+    direction = "vertical",
+  }
+  create_header_flow(scroll_flow)
+  local scroll = scroll_flow.add{
     name = "scroll",
     type = "scroll-pane",
   }
   scroll.style.height = 800
-  self.recipes_table = scroll.add{
+  self.recipes_flow = scroll.add{
     name = "recipes",
-    type = "table",
-    column_count = 4,
+    type = "flow",
+    direction = "vertical",
   }
-
-  create_header_row(self.recipes_table)
 end
 
 local function create_frame(self, parent)
@@ -63,41 +79,30 @@ local function create_frame(self, parent)
     type = "label",
     caption = "Production Planner",
   }
-  add_recipes_table(self, frame)
+  add_recipes_flow(self, frame)
   return frame
 end
 
-local function register_event_handlers(self)
-  Dispatcher.register(
-    defines.events.on_gui_click,
-    self.add_recipe_button,
-    function(event)
-      self.controller:on_add_recipe_button(event)
-    end)
+local PlannerFrame = {}
+
+function PlannerFrame:add_recipe()
+  local index = #self.recipe_flows + 1
+  local recipe_flow = RecipeFlow.new(self.recipes_flow)
+  self.recipe_flows[index] = recipe_flow
+  return recipe_flow
 end
 
-local PlannerView = {}
-
-function PlannerView:set_controller(controller)
-  self.controller = controller
-end
-
-function PlannerView:add_recipe(name)
-  self.recipe_flows[#self.recipe_flows] = RecipeFlow.new(self.recipes)
-end
-
-function PlannerView:get_recipes_table()
-  return self.recipes_table
+function PlannerFrame:set_recipe(index, recipe)
+  self.recipe_flows[index]:set_recipe(recipe)
 end
 
 local M = {}
-local meta = { __index = PlannerView }
+local meta = { __index = PlannerFrame }
 
 function M.new(parent)
   local self = {
-    controller = nil,
     gui = nil,
-    recipes_table = nil,
+    recipes_flow = nil,
     add_recipe_button = nil,
     recipe_flows = {},
   }
@@ -106,9 +111,7 @@ function M.new(parent)
 end
 
 function M.restore(self)
-  setmetatable(self, meta)
-  register_event_handlers(self)
-  return self
+  return setmetatable(self, meta)
 end
 
 return M

@@ -1,4 +1,4 @@
-local Dispatcher = require "gui.Dispatcher"
+local mod_gui = require "mod-gui"
 local PlannerFrame = require "gui.PlannerFrame"
 local RecipePickerFrame = require "gui.RecipePickerFrame"
 
@@ -18,19 +18,11 @@ local function create_flow(player)
   }
 end
 
-local function register_event_handlers(self)
-  Dispatcher.register(
-    defines.events.on_gui_click,
-    self.show_hide_button,
-    function(event)
-      self.controller:on_show_hide_button(self)
-    end)
-end
-
 local MasterFlowView = {}
 
-function MasterFlowView:set_controller(controller)
-  self.controller = controller
+function MasterFlowView:show_all_recipe_picker()
+  self.recipe_picker_frame:set_recipes()
+  self.recipe_picker_frame.gui.style.visible = true
 end
 
 local M = {}
@@ -38,11 +30,9 @@ local M = {}
 local meta = { __index = MasterFlowView }
 
 function M.new(player)
-  local show_hide_button = create_show_hide_button(player)
   local flow = create_flow(player)
   local self = {
-    controller = nil,
-    show_hide_button = show_hide_button,
+    show_hide_button = create_show_hide_button(player),
     gui = flow,
     planner_frame = PlannerFrame.new(flow),
     recipe_picker_frame = RecipePickerFrame.new(flow),
@@ -51,7 +41,8 @@ function M.new(player)
 end
 
 function M.restore(self)
-  register_event_handlers(self)
+  PlannerFrame.restore(self.planner_frame)
+  RecipePickerFrame.restore(self.recipe_picker_frame)
   return setmetatable(self, meta)
 end
 
