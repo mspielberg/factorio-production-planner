@@ -6,6 +6,11 @@ local VirtualRecipe = require "VirtualRecipe"
 local function setup_mocks()
   _G.game = {
     recipe_prototypes = {
+      ["electronic-circuit"] = {
+        energy = 0.5,
+        ingredients = {{name = "iron-plate", amount = 1}, {name = "copper-cable", amount = 3}},
+        products = {{name = "electronic-circuit", amount = 1}},
+      },
       ["iron-gear-wheel"] = {
         energy = 0.5,
         ingredients = {{name = "iron-plate", amount = 2}},
@@ -46,11 +51,17 @@ describe("A Recipe should", function()
       gear_recipe:add_constraint(constraint, "iron-gear-wheel")
       assert.is_equal(2, plate_recipe.rate) 
     end)
-
     it("that are indirect descendents", function()
       local constraint = VirtualRecipe.new("science-pack-1", -1)
       sp1_recipe:add_constraint(constraint, "science-pack-1")
       assert.is_equal(2, plate_recipe.rate) 
+    end)
+
+    it("after removing a constraint", function()
+      local constraint = VirtualRecipe.new("science-pack-1", -1)
+      sp1_recipe:add_constraint(constraint, "science-pack-1")
+      sp1_recipe:remove_constraint(constraint, "science-pack-1")
+      assert.is_equal(0, plate_recipe.rate) 
     end)
   end)
 
@@ -61,6 +72,25 @@ describe("A Recipe should", function()
 
     it("that are transitive", function()
       assert.is_true(plate_recipe:is_constrained_by(sp1_recipe))
+    end)
+  end)
+
+  describe("allow changing its recipe", function()
+    it("preserves matching constraints", function()
+      local constraint = VirtualRecipe.new("science-pack-1", -1)
+      sp1_recipe:add_constraint(constraint, "science-pack-1")
+      gear_recipe:set_recipe("electronic-circuit")
+      assert.is_true(plate_recipe:is_constrained_by(gear_recipe))
+      assert.is_equal(0, plate_recipe.rate)
+    end)
+
+    it("drops broken constraints", function()
+      local constraint = VirtualRecipe.new("science-pack-1", -1)
+      sp1_recipe:add_constraint(constraint, "science-pack-1")
+      assert.is_true(plate_recipe:is_constrained_by(gear_recipe))
+      gear_recipe:set_recipe("electronic-circuit")
+      assert.is_false(plate_recipe:is_constrained_by(sp1_recipe))
+      assert.is_equal(1, sp1_recipe.rate)
     end)
   end)
 end)

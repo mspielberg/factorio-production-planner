@@ -1,5 +1,10 @@
 local inspect = require "inspect"
 
+--- returns true if both a and b are item production (+ive) or item consumption (-ive)
+local function same_rate_type(a, b)
+  return (a or 0) * (b or 0) > 0
+end
+
 local function normalize_items(proto)
   local out = {}
   for _, ingredient in pairs(proto.ingredients) do
@@ -19,11 +24,38 @@ local function item_constraints(self)
   local out = {}
   for _, constraint in pairs(self.constrained_by) do
     local constraining_recipe = constraint.recipe
+    local item_rates = constraining_recipe:get_item_rates()
     local item_name = constraint.item
-    out[item_name] = (out[item_name] or 0) -
-      constraining_recipe:get_item_rates()[item_name]
+    local constraining_rate = constraining_recipe:get_item_rates()[item_name] or 0
+    out[item_name] = (out[item_name] or 0) - constraining_rate
   end
   return out
+end
+
+local function add_constraint(self, recipe, item_name)
+  for k, constraint in pairs(self.constrained_by) do
+    if constraint.recipe == recipe and constraint.item == item_name then
+      return
+    end
+  end
+  self.constrained_by[#self.constrained_by+1] = { recipe = recipe, item = item_name }
+  recipe.constrains[#recipe.constrains+1] = { recipe = self, item = item_name}
+end
+
+local function remove_constraint(self, recipe, item_name)
+  for i, constraint in pairs(self.constrained_by) do
+    if constraint.recipe == recipe and constraint.item == item_name then
+      table.remove(self.constrained_by, i)
+      break
+    end
+  end
+
+  for i, constraint in pairs(recipe.constrains) do
+    if constraint.recipe == self and constraint.item == item_name then
+      table.remove(recipe.constrains, i)
+      break
+    end
+  end
 end
 
 local function update_rate(self)
@@ -35,43 +67,33 @@ local function update_rate(self)
       new_rate = required_recipe_rate
     end
   end
-  self:set_recipe_rate(new_rate)
-end
 
+  assert(new_rate >= 0)
+  if new_rate ~= self.rate then
+    self.rate = new_rate
+    for _, constraint in pairs(self.constrains) do
+      update_rate(constraint.recipe)
+    end
+  end
+end
 
 local Recipe = {}
 
 function Recipe:add_constraint(recipe, item_name)
-  for k, constraint in pairs(self.constrains) do
-    if constraint.recipe == recipe and constraint.item == item_name then
-      return
-    end
-  end
-  self.constrained_by[#self.constrained_by+1] = { recipe = recipe, item = item_name }
-  recipe.constrains[#recipe.constrains] = { recipe = self, item = item_name }
+  add_constraint(self, recipe, item_name)
   update_rate(self)
 end
 
 function Recipe:remove_constraint(recipe, item_name)
-  for i, constraint in pairs(self.constrains) do
-    local constrained_recipe = constraint.recipe
-    if constrained_recipe == recipe and constraint.item == item_name then
-      for j, constrained_by in pairs(constrained_recipe.constrained_by) do
-        if constrained_by.recipe == self and constrained_by.item == item_name then
-          constrained_recipe.constrained_by[j] = nil
-        end
-      end
-      constraints[i] = nil
-      return
-    end
-  end
+  remove_constraint(self, recipe, item_name)
   update_rate(self)
 end
 
 function Recipe:is_constrained_by(other)
   for _, constrained in pairs(other.constrains) do
-    if constrained.recipe == self then return true end
-    if self:is_constrained_by(constrained.recipe) then return true end
+    if constrained.recipe == self or self:is_constrained_by(constrained.recipe) then
+      return true
+    end
   end
   return false
 end
@@ -85,30 +107,44 @@ function Recipe:get_item_rates()
   return out
 end
 
-function Recipe:set_recipe_rate(recipe_rate)
-  assert(recipe_rate >= 0)
-  if recipe_rate == self.rate then return end
-  self.rate = recipe_rate
-  for _, constraint in pairs(self.constrains) do
-    constraint.recipe:update_rate()
+function Recipe:set_recipe(recipe_name)
+  local old_items = self.items
+  self.name = recipe_name
+  local proto = game.recipe_prototypes[recipe_name]
+  self.energy = proto.energy
+  self.items = normalize_items(proto)
+
+  for _, constraint in pairs(self.constrained_by) do
+    local item_name = constraint.item
+    if not same_rate_type(self.items[item_name], old_items[item_name]) then
+      remove_constraint(self, constraint.recipe, item_name)
+    end
   end
+
+  for _, constraint in pairs(self.constrains) do
+    local item_name = constraint.item_name
+    if not same_rate_type(self.items[item_name], old_items[item_name]) then
+      remove_constraint(constraint.recipe, self, item_name)
+    end
+  end
+
+  update_rate(self)
 end
 
 local M = {}
 
 function M.new(name)
-  local proto = game.recipe_prototypes[name]
-  if not proto then return nil end
-
   local self = {
-    name = name,
-    rate = 0,
-    energy = proto.energy,
-    items = normalize_items(proto),
+    name = "",
+    rate = 0, -- crafts/s
+    energy = 0, -- only used to calculate number of needed crafting machines
+    items = {},
     constrains = {},
     constrained_by = {},
   }
-  return M.restore(self)
+  M.restore(self)
+  self:set_recipe(name)
+  return self
 end
 
 function M.restore(self)
