@@ -10,11 +10,12 @@ local function get_recipe_index(self, recipe)
   end
 end
 
-function ProductionLine:change_recipe(index, recipe)
-  if index then
-    self.recipes[index] = recipe
+function ProductionLine:change_recipe(index, name)
+  local recipe = self.recipes[index]
+  if recipe then
+    recipe:set_recipe(name)
   else
-    self.recipes[#self.recipes+1] = recipe
+    self.recipes[index] = Recipe.new(name)
   end
 end
 

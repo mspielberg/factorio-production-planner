@@ -1,5 +1,5 @@
-local inspect = require "inspect"
 require "busted"
+local inspect = require "inspect"
 local Recipe = require "Recipe"
 local VirtualRecipe = require "VirtualRecipe"
 

@@ -49,21 +49,24 @@ function PlannerFrameController:set_recipes(recipes)
 end
 
 function PlannerFrameController:add_recipe(recipe_name)
-  local recipe = Recipe.new(recipe_name)
-  self.planner:change_recipe(nil, recipe)
-  log(inspect(self.planner))
+  local index = #self.recipe_controllers + 1
+  self.planner:change_recipe(index, recipe_name)
 
   local recipe_flow = self.view:add_recipe()
-  local index = #self.recipe_controllers + 1
   local recipe_controller = RecipeFlowController.new(recipe_flow, index)
   recipe_controller:set_production_line(self.planner.current_line, index)
   self.recipe_controllers[index] = recipe_controller
 end
 
 function PlannerFrameController:change_recipe(index, recipe_name)
-  local recipe = Recipe.new(recipe_name)
-  self.planner:change_recipe(index, recipe)
-  self.recipe_controllers[index]:update()
+  self.planner:change_recipe(index, recipe_name)
+  self:update()
+end
+
+function PlannerFrameController:update()
+  for _, recipe_controller in pairs(self.recipe_controllers) do
+    recipe_controller:update()
+  end
 end
 
 local M = {}
