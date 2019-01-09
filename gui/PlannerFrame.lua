@@ -49,6 +49,9 @@ local function add_recipes_flow(self, parent)
     type = "sprite-button",
     sprite = "utility/add",
   }
+  self.add_recipe_button.style.scaleable = false
+  self.add_recipe_button.style.height = 36
+  self.add_recipe_button.style.width = 36
   local scroll_flow = flow.add{
     name = "right",
     type = "flow",

@@ -84,6 +84,9 @@ local function create(self, parent)
     type = "sprite-button",
     sprite = "utility/remove",
   }
+  self.remove_button.style.scaleable = false
+  self.remove_button.style.height = 36
+  self.remove_button.style.width = 36
   self.recipe_button = flow.add{
     name = "change_recipe_button",
     type = "sprite-button",
