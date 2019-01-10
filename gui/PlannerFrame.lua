@@ -6,7 +6,6 @@ local function add_frame(self, parent)
     type = "frame",
     direction = "vertical",
   }
-  frame.style.visible = false
   self.gui = frame
   local title = frame.add{
     name = "title",

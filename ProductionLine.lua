@@ -23,6 +23,14 @@ function ProductionLine:remove_recipe(index)
   table.remove(self.recipes, index)
 end
 
+function ProductionLine:reorder_recipes(from, to)
+  if to < 1 then to = 1 end
+  if to > #self.recipes then to = #self.recipes end
+  local recipe = self.recipes[from]
+  table.remove(self.recipes, from)
+  table.insert(self.recipes, to, recipe)
+end
+
 function ProductionLine:add_constraint(recipe, item, amount)
   self.constraints[#self.constraints] = {
     recipe = recipe,

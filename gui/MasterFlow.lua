@@ -11,11 +11,13 @@ local function create_show_hide_button(player)
 end
 
 local function create_flow(player)
-  return mod_gui.get_frame_flow(player).add{
+  local flow = mod_gui.get_frame_flow(player).add{
     name = "planner",
     type = "flow",
     direction = "horizontal",
   }
+  flow.style.visible = false
+  return flow
 end
 
 local MasterFlowView = {}

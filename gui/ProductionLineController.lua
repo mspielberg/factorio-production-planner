@@ -5,18 +5,37 @@ local ProductionLineFlow = require "gui.ProductionLineFlow"
 local Recipe = require "Recipe"
 local RecipeFlowController = require "gui.RecipeFlowController"
 
+local function on_move_recipe_button(self, event)
+  local recipe_index = event.context.recipe_index
+  local delta
+  if event.control then
+    delta = math.huge
+  elseif event.shift then
+    delta = 5
+  else
+    delta = 1
+  end
+  if event.element.name == "move_recipe_up_button" then
+    delta = -delta
+  end
+  self.production_line:reorder_recipes(recipe_index, recipe_index + delta)
+  self:update()
+end
+
 local function on_remove_recipe_button(self, recipe_index)
+  log(inspect{before=self.recipe_controllers, recipe_index=recipe_index})
   self.production_line:remove_recipe(recipe_index)
 
   local recipe_controllers = self.recipe_controllers
   recipe_controllers[recipe_index]:destroy()
 
   local num_controllers = #recipe_controllers
-  for i=num_controllers-1, recipe_index, -1 do
+  for i=recipe_index, num_controllers-1 do
     recipe_controllers[i] = recipe_controllers[i+1]
     recipe_controllers[i]:set_index(i)
   end
   recipe_controllers[num_controllers] = nil
+  log(inspect{after=self.recipe_controllers})
 end
 
 local ProductionLineController = {}
@@ -80,7 +99,10 @@ end
 
 function ProductionLineController:on_gui_click(event)
   local element = event.element
-  if element.name == "remove_recipe_button" then
+  if element.name == "move_recipe_up_button" or element.name == "move_recipe_down_button" then
+    on_move_recipe_button(self, event)
+    return true
+  elseif element.name == "remove_recipe_button" then
     on_remove_recipe_button(self, event.context.recipe_index)
     return true
   elseif event.context.recipe_index then

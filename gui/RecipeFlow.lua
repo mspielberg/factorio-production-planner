@@ -16,27 +16,25 @@ local function remove_buttons(parent)
 end
 
 local function disable_all_buttons(self)
+  for _, parent in pairs{self.arrow_flow, self.ingredients_table, self.products_table} do
+    for _, button in pairs(parent.children) do
+      button.enabled = false
+    end
+  end
   self.remove_button.enabled = false
   self.recipe_button.enabled = false
   self.crafting_machine_button.enabled = false
-  for _, button in ipairs(self.ingredients_table.children) do
-    button.enabled = false
-  end
-  for _, button in ipairs(self.products_table.children) do
-    button.enabled = false
-  end
 end
 
 local function enable_all_buttons(self)
+  for _, parent in pairs{self.arrow_flow, self.ingredients_table, self.products_table} do
+    for _, button in pairs(parent.children) do
+      button.enabled = true
+    end
+  end
   self.remove_button.enabled = true
   self.recipe_button.enabled = true
   self.crafting_machine_button.enabled = true
-  for _, button in ipairs(self.ingredients_table.children) do
-    button.enabled = true
-  end
-  for _, button in ipairs(self.products_table.children) do
-    button.enabled = true
-  end
 end
 
 local function update_recipe_button(self, recipe)
@@ -104,8 +102,6 @@ end
 local function update_counts(self, recipe)
   local rates = recipe:get_item_rates()
   for name, amount in pairs(rates) do
-    log(inspect{name, amount})
-    log(inspect(self))
     local proto = game.item_prototypes[name] or game.fluid_prototypes[name]
     local button = self.ingredients_table[name] or self.products_table[name]
     if amount < 0 then
@@ -172,6 +168,27 @@ local function create(self, parent)
     type = "flow",
     direction = "horizontal",
   }
+  flow.style.vertical_align = "center"
+
+  local arrow_flow = flow.add{
+    name = "arrows",
+    type = "flow",
+    direction = "vertical",
+  }
+  self.arrow_flow = arrow_flow
+  arrow_flow.add{
+    name = "move_recipe_up_button",
+    type = "button",
+    style = "column_ordering_ascending_button_style",
+    tooltip = "planner-gui.move-recipe-tooltip",
+  }
+  arrow_flow.add{
+    name = "move_recipe_down_button",
+    type = "button",
+    style = "column_ordering_descending_button_style",
+    tooltip = "planner-gui.move-recipe-tooltip",
+  }
+
   self.remove_button = flow.add{
     name = "remove_recipe_button",
     type = "sprite-button",
@@ -180,22 +197,26 @@ local function create(self, parent)
   self.remove_button.style.scaleable = false
   self.remove_button.style.height = 36
   self.remove_button.style.width = 36
+
   self.recipe_button = flow.add{
     name = "change_recipe_button",
     type = "sprite-button",
     style = "recipe_slot_button",
   }
+
   self.crafting_machine_button = flow.add{
     name = "crafting_machine",
     type = "sprite-button",
     style = "recipe_slot_button",
   }
+
   self.ingredients_table = flow.add{
     name = "ingredients",
     type = "table",
     column_count = 5,
   }
   self.ingredients_table.style.width = style.dimensions.ingredients_column_width
+
   self.products_table = flow.add{
     name = "products",
     type = "table",
@@ -243,6 +264,7 @@ function M.new(parent, index)
   local self = {
     gui = nil,
 
+    arrow_flow = nil,
     remove_button = nil,
     recipe_button = nil,
     crafting_machine_button = nil,
