@@ -242,6 +242,7 @@ end
 
 function RecipeFlow:update()
   local recipe = self.production_line.recipes[self.index]
+  self.remove_button.enabled = true
   update_move_recipe_buttons(self)
   update_recipe_button(self, recipe)
   update_crafting_machine_button(self, recipe)

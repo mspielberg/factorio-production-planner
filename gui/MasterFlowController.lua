@@ -71,6 +71,15 @@ local function on_recipe_picked(self, event)
   end
 end
 
+local function on_recipe_picker_cancelled(self, event)
+  local state = self.state
+  if state.name == LINKING then
+    self.planner_frame:complete_link(nil, nil, nil)
+  end
+  self.recipe_picker:hide()
+  self.state = { name = IDLE }
+end
+
 local MasterFlowController = {}
 
 -- event handlers
@@ -88,6 +97,9 @@ function MasterFlowController:on_gui_click(event)
     return true
   elseif element.parent.name == "ingredients" or element.parent.name == "products" then
     on_item_button(self, event)
+    return true
+  elseif element.name == "cancel_recipe_picker_button" then
+    on_recipe_picker_cancelled(self, event)
     return true
   elseif event.context.type == "RecipePicker" then
     on_recipe_picked(self, event)

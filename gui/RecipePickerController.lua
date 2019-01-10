@@ -40,6 +40,7 @@ function RecipePickerController:show()
 end
 
 function RecipePickerController:hide()
+  self.virtual_recipe_flow:reset()
   self.picker_frame:hide()
 end
 

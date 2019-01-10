@@ -20,6 +20,10 @@ function VirtualRecipeFlowController:on_gui_text_changed(event)
   element.text = rate
 end
 
+function VirtualRecipeFlowController:reset()
+  self.view:reset()
+end
+
 local M = {}
 
 function M.new(view)

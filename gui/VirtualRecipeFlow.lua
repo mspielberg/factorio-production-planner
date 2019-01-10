@@ -59,6 +59,11 @@ end
 local VirtualRecipeFlow = {}
 local meta = { __index = VirtualRecipeFlow }
 
+function VirtualRecipeFlow:reset()
+  self.choose_item_button.elem_value = nil
+  self.rate_field.text = ""
+end
+
 local M = {}
 
 function M.new(parent)
