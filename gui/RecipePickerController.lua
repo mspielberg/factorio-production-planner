@@ -100,8 +100,8 @@ end
 
 function M.has_product_filter(name)
   return function(recipe)
-    for _, product in pairs(recipe.product) do
-      if ingredient.name == name then
+    for _, product in pairs(recipe.products) do
+      if product.name == name then
         return true
       end
     end

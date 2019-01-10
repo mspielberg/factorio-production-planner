@@ -32,7 +32,7 @@ function ProductionLine:add_constraint(recipe, item, amount)
 end
 
 function ProductionLine:link_recipes(r1, r2, item_name)
-  r1:add_constraint(r2, item_name)
+  self.recipes[r1]:add_constraint(self.recipes[r2], item_name)
 end
 
 function ProductionLine:recompute()
@@ -57,6 +57,9 @@ function M.new()
 end
 
 function M.restore(self)
+  for _, recipe in pairs(self.recipes) do
+    Recipe.restore(recipe)
+  end
   return setmetatable(self, meta)
 end
 

@@ -20,9 +20,9 @@ end
 
 local MasterFlowView = {}
 
-function MasterFlowView:show_all_recipe_picker()
-  self.recipe_picker_frame:set_recipes()
-  self.recipe_picker_frame.gui.style.visible = true
+function MasterFlowView:toggle_show_hide()
+  local style = self.gui.style
+  style.visible = not style.visible
 end
 
 local M = {}

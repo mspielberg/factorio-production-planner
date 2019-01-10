@@ -16,8 +16,12 @@ function RecipeFlowController:set_index(index)
   self.view:update()
 end
 
-function RecipeFlowController:on_gui_click(event)
-  event.context.recipe_index = self.index
+function RecipeFlowController:prepare_for_link(is_product, item_name)
+  self.view:enable_buttons_for_link(is_product, item_name)
+end
+
+function RecipeFlowController:complete_link()
+  self.view:complete_link()
 end
 
 function RecipeFlowController:update()
@@ -26,6 +30,12 @@ end
 
 function RecipeFlowController:destroy()
   self.view:destroy()
+end
+
+-- event handlers
+
+function RecipeFlowController:on_gui_click(event)
+  event.context.recipe_index = self.index
 end
 
 local M = {}

@@ -2,18 +2,6 @@ local ProductionLine = require "ProductionLine"
 
 local Planner = {}
 
-function Planner:change_recipe(index, name)
-  self.current_line:change_recipe(index, name)
-end
-
-function Planner:remove_recipe(index)
-  self.current_line:remove_recipe(index)
-end
-
-function Planner:current_recipes()
-  return self.production_lines[self.current_line].recipes
-end
-
 local M = {}
 local meta = { __index = Planner }
 

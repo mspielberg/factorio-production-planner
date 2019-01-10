@@ -19,3 +19,10 @@ link controllers to existing gui
 views:
   hold references to GuiComponents
   do NOT hold references to controllers
+
+
+
+
+VirtualRecipe
+VirtualCraftingMachine
+

@@ -15,6 +15,30 @@ local function remove_buttons(parent)
   parent.clear()
 end
 
+local function disable_all_buttons(self)
+  self.remove_button.enabled = false
+  self.recipe_button.enabled = false
+  self.crafting_machine_button.enabled = false
+  for _, button in ipairs(self.ingredients_table.children) do
+    button.enabled = false
+  end
+  for _, button in ipairs(self.products_table.children) do
+    button.enabled = false
+  end
+end
+
+local function enable_all_buttons(self)
+  self.remove_button.enabled = true
+  self.recipe_button.enabled = true
+  self.crafting_machine_button.enabled = true
+  for _, button in ipairs(self.ingredients_table.children) do
+    button.enabled = true
+  end
+  for _, button in ipairs(self.products_table.children) do
+    button.enabled = true
+  end
+end
+
 local function update_recipe_button(self, recipe)
   self.recipe_button.sprite = "recipe/"..recipe.name
 end
@@ -55,6 +79,28 @@ local function update_product_buttons(self, recipe)
   end
 end
 
+local function update_links(self, recipe)
+  for _, table in pairs{self.ingredients_table, self.products_table} do
+    for _, button in pairs(table.children) do
+      local item_name = button.name
+      local style
+      for _, constraint in pairs(recipe.constrains) do
+        if constraint.item == item_name then
+          style = "green_slot_button"
+        end
+      end
+      for _, constraint in pairs(recipe.constrained_by) do
+        if constraint.item == item_name then
+          style = "slot_with_filter_button"
+        end
+      end
+      if style then
+        button.style = style
+      end
+    end
+  end
+end
+
 local function update_counts(self, recipe)
   local rates = recipe:get_item_rates()
   for name, amount in pairs(rates) do
@@ -66,11 +112,58 @@ local function update_counts(self, recipe)
       amount = -amount
     end
     button.number = amount
+    --[[
     button.tooltip = {
       "planner-gui.item-button-tooltip",
       proto.localised_name,
       amount,
     }
+    ]]
+  end
+end
+
+local function update_tooltip(self, recipe, button)
+  local item_name = button.name
+
+  local components = {
+    "",
+    {
+      "planner-gui.item-button-tooltip",
+      game.item_prototypes[item_name].localised_name,
+      math.abs(recipe:get_item_rates()[item_name]),
+    },
+  }
+  local constrained_by = recipe:get_constrained_by(item_name)
+  if next(constrained_by) then
+    components[#components+1] = {"planner-gui.constrained-by-header"}
+    for _, constraining_recipe in pairs(constrained_by) do
+      components[#components+1] = {
+        "planner-gui.item-rate-line",
+        game.recipe_prototypes[constraining_recipe.name].localised_name,
+        math.abs(constraining_recipe:get_item_rates()[item_name]),
+      }
+    end
+  end
+  local constrains = recipe:get_constrains(item_name)
+  if next(constrains) then
+    components[#components+1] = {"planner-gui.constrains-header"}
+    for _, constrained_recipe in pairs(constrains) do
+      components[#components+1] = {
+        "planner-gui.item-rate-line",
+        game.recipe_prototypes[constrained_recipe.name].localised_name,
+        math.abs(constrained_recipe:get_item_rates()[item_name]),
+      }
+    end
+  end
+
+  button.tooltip = components
+end
+
+local function update_tooltips(self, recipe)
+  for _, t in pairs{self.ingredients_table, self.products_table} do
+    for _, button in pairs(t.children) do
+      update_tooltip(self, recipe, button)
+    end
   end
 end
 
@@ -90,12 +183,12 @@ local function create(self, parent)
   self.recipe_button = flow.add{
     name = "change_recipe_button",
     type = "sprite-button",
-    style = "slot_button",
+    style = "recipe_slot_button",
   }
   self.crafting_machine_button = flow.add{
     name = "crafting_machine",
     type = "sprite-button",
-    style = "slot_button",
+    style = "recipe_slot_button",
   }
   self.ingredients_table = flow.add{
     name = "ingredients",
@@ -115,10 +208,17 @@ end
 
 local RecipeFlow = {}
 
-function RecipeFlow:set_recipe(production_line, recipe_index)
-  log("RecipeFlow:set_recipe")
-  self.production_line, self.index = production_line, recipe_index
-  self:update()
+function RecipeFlow:enable_buttons_for_link(is_product, item_name)
+  disable_all_buttons(self)
+  local item_table = is_product and self.products_table or self.ingredients_table
+  local button = item_table[item_name]
+  if button then
+    button.enabled = true
+  end
+end
+
+function RecipeFlow:complete_link()
+  enable_all_buttons(self)
 end
 
 function RecipeFlow:update()
@@ -127,7 +227,9 @@ function RecipeFlow:update()
   update_crafting_machine_button(self)
   update_ingredient_buttons(self, recipe)
   update_product_buttons(self, recipe)
+  update_links(self, recipe)
   update_counts(self, recipe)
+  update_tooltips(self, recipe)
 end
 
 function RecipeFlow:destroy()

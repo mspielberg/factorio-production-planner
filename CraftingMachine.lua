@@ -107,8 +107,8 @@ function M.new(name)
   local self = {
     name = name,
     base_speed = game.entity_prototypes[name].crafting_speed,
-    modules = {},
-    beacon_info = nil,
+    modules = {}, -- = { [module_name] = count, ... }
+    beacon_info = nil, -- = { name = "beacon", count = 1, module_name = "speed-module-1", module_count = 2 }
     beacon_speed_bonus = 0,
     beacon_productivity_bonus = 0,
   }

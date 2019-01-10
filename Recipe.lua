@@ -98,6 +98,32 @@ function Recipe:is_constrained_by(other)
   return false
 end
 
+function Recipe:can_link(other, item_name)
+  local my_count = self.items[item_name]
+  local other_count = other.items[item_name]
+  return my_count and other_count and my_count * other_count < 0 or false
+end
+
+function Recipe:get_constrained_by(item_name)
+  local out = {}
+  for _, constraint in pairs(self.constrained_by) do
+    if constraint.item == item_name then
+      out[#out+1] = constraint.recipe
+    end
+  end
+  return out
+end
+
+function Recipe:get_constrains(item_name)
+  local out = {}
+  for _, constraint in pairs(self.constrains) do
+    if constraint.item == item_name then
+      out[#out+1] = constraint.recipe
+    end
+  end
+  return out
+end
+
 function Recipe:get_item_rates()
   local recipe_rate = self.rate
   local out = {}
