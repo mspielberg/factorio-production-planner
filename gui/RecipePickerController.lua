@@ -2,6 +2,7 @@ local Dispatcher = require "gui.Dispatcher"
 local inspect = require "inspect"
 local RecipePickerFrame = require "gui.RecipePickerFrame"
 local RecipePickerFlow = require "gui.RecipePickerFlow"
+local VirtualRecipeFlowController = require "gui.VirtualRecipeFlowController"
 
 local function accepted_recipes(force, filter)
   local out = {}
@@ -20,9 +21,11 @@ function RecipePickerController:on_gui_click(event)
   if element.parent and element.parent.name == "groups" then
     self.picker_flow:select_group(element.name)
     return true
-  else
+  elseif element.type == "sprite-button" then
     event.context.type = "RecipePicker"
     event.context.recipe_name = element.name
+  elseif element.name:find("^create_virtual_") then
+    event.context.type = "RecipePicker"
   end
 end
 
@@ -47,6 +50,9 @@ function M.new(frame, flow, player)
   local self = {
     picker_frame = frame,
     picker_flow = flow,
+
+    virtual_recipe_flow = VirtualRecipeFlowController.new(frame.virtual_recipe_flow),
+
     player = player,
   }
   return M.restore(self)
@@ -55,7 +61,8 @@ end
 function M.restore(self)
   RecipePickerFrame.restore(self.picker_frame)
   RecipePickerFlow.restore(self.picker_flow)
-  Dispatcher.register(self, self.picker_flow.gui)
+  VirtualRecipeFlowController.restore(self.virtual_recipe_flow)
+  Dispatcher.register(self, self.picker_frame.gui)
   return setmetatable(self, meta)
 end
 

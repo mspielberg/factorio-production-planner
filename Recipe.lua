@@ -137,6 +137,7 @@ function Recipe:set_recipe(recipe_name)
   local old_items = self.items
   self.name = recipe_name
   local proto = game.recipe_prototypes[recipe_name]
+  self.localised_name = proto.localised_name
   self.energy = proto.energy
   self.items = normalize_items(proto)
 
@@ -162,6 +163,7 @@ local M = {}
 function M.new(name)
   local self = {
     name = "",
+    localised_name = "",
     rate = 0, -- crafts/s
     energy = 0, -- only used to calculate number of needed crafting machines
     items = {},

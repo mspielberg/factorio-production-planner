@@ -54,9 +54,10 @@ function ProductionLineController:set_recipes(recipes)
   end
 end
 
-function ProductionLineController:add_recipe(recipe_name)
+function ProductionLineController:add_recipe(args)
   local index = #self.recipe_controllers + 1
-  self.production_line:change_recipe(index, recipe_name)
+  args.index = index
+  self.production_line:change_recipe(args)
 
   local recipe_flow = self.view:add_recipe()
   local recipe_controller = RecipeFlowController.new(recipe_flow, index)

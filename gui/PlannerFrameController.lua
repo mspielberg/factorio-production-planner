@@ -6,8 +6,13 @@ local ProductionLineController = require "gui.ProductionLineController"
 
 local PlannerFrameController = {}
 
-function PlannerFrameController:add_recipe(recipe_name)
-  self.production_line:add_recipe(recipe_name)
+function PlannerFrameController:add_recipe(args)
+  self.production_line:add_recipe(args)
+  return #self.planner.current_line.recipes
+end
+
+function PlannerFrameController:add_virtual_recipe(item_name, rate)
+  self.production_line:add_virtual_recipe(item_name, rate)
   return #self.planner.current_line.recipes
 end
 

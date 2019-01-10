@@ -53,17 +53,17 @@ local function on_item_button(self, event)
   end
 end
 
-local function on_recipe_picked(self, recipe_name)
+local function on_recipe_picked(self, event)
   local state = self.state
   if state.name == ADDING_RECIPE or state.name == LINKING then
-    local new_recipe_index = self.planner_frame:add_recipe(recipe_name)
+    local new_recipe_index = self.planner_frame:add_recipe(event.context)
     if state.name == LINKING then
       self.planner_frame:complete_link(new_recipe_index, state.recipe_index, state.item_name)
     end
     self.recipe_picker:hide()
     self.state = { name = IDLE }
   elseif state.name == CHANGING_RECIPE then
-    self.planner_frame:change_recipe(self.state.recipe_index, recipe_name)
+    self.planner_frame:change_recipe(self.state.recipe_index, event.context.recipe_name)
     self.recipe_picker:hide()
     self.state = { name = IDLE }
   else
@@ -89,8 +89,8 @@ function MasterFlowController:on_gui_click(event)
   elseif element.parent.name == "ingredients" or element.parent.name == "products" then
     on_item_button(self, event)
     return true
-  elseif event.context and event.context.type == "RecipePicker" then
-    on_recipe_picked(self, event.context.recipe_name)
+  elseif event.context.type == "RecipePicker" then
+    on_recipe_picked(self, event)
     return true
   end
 end
