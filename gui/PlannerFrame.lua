@@ -5,13 +5,9 @@ local function add_frame(self, parent)
     name = "planner_frame",
     type = "frame",
     direction = "vertical",
+    caption = {"planner-gui.planner-frame-caption"},
   }
   self.gui = frame
-  local title = frame.add{
-    name = "title",
-    type = "label",
-    caption = "Production Planner",
-  }
   self.production_line_flow = ProductionLineFlow.new(self.gui)
 end
 

@@ -9,6 +9,13 @@ for name, id in pairs(defines.events) do
   event_names[id] = name
 end
 
+local ignorable_types = {
+  flow = true,
+  frame = true,
+  label = true,
+  table = true,
+}
+
 local delegates = {}
 
 local function cleanup()
@@ -43,6 +50,7 @@ function M.dispatch(event)
   cleanup()
   event.context = {}
   local element = event.element
+  local element_type = element.type
   local event_name = event_names[event.name] or event.name
   local handled = false
 
@@ -70,7 +78,7 @@ function M.dispatch(event)
   end
   debugp{name="dispatch_end"}
 
-  if not handled then
+  if not handled and not ignorable_types[element_type] then
     game.print("no delegate found for event "..event_name.." on element "..extract_path(event.element))
   end
 end
