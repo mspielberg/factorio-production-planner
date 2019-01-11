@@ -24,9 +24,9 @@ local function item_constraints(self)
   local out = {}
   for _, constraint in pairs(self.constrained_by) do
     local constraining_recipe = constraint.recipe
-    local item_rates = constraining_recipe:get_item_rates()
+    local item_rates = constraining_recipe:get_current_rates()
     local item_name = constraint.item
-    local constraining_rate = constraining_recipe:get_item_rates()[item_name] or 0
+    local constraining_rate = item_rates[item_name]
     out[item_name] = (out[item_name] or 0) - constraining_rate
   end
   return out
@@ -124,11 +124,34 @@ function Recipe:get_constrains(item_name)
   return out
 end
 
-function Recipe:get_item_rates()
+function Recipe:get_prototype_rates()
+  return self.items
+end
+
+function Recipe:get_current_rates()
   local recipe_rate = self.rate
   local out = {}
   for item_name, amount in pairs(self.items) do
     out[item_name] = amount * recipe_rate
+  end
+  return out
+end
+
+function Recipe:get_links()
+  local out = {}
+  for _, constraint in pairs(self.constrains) do
+    out[constraint.item] = { localised_name = constraint.recipe.localised_name }
+  end
+  for _, constraint in pairs(self.constrained_by) do
+    local item_name = constraint.item
+    if not out[item_name] then out[item_name] = { constrained_by = {} } end
+    table.insert(
+      out[item_name].constrained_by,
+      {
+        localised_name = constraint.recipe.localised_name,
+        rate = constraint.recipe.rate,
+      }
+    )
   end
   return out
 end

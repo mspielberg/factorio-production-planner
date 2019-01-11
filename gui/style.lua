@@ -10,4 +10,5 @@ return {
     ingredients_column_width = item_column_width,
     products_column_width = item_column_width,
   },
+  item_buttons_in_column = item_buttons_in_column,
 }

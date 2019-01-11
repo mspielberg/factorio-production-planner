@@ -3,11 +3,12 @@ local inspect = require "inspect"
 local VirtualRecipe = {}
 local meta = { __index = VirtualRecipe }
 
-function VirtualRecipe:get_item_rates()
+function VirtualRecipe:get_prototype_rates()
   return self.items
 end
 
-function VirtualRecipe:update_rate()
+function VirtualRecipe:get_current_rates()
+  return self.items
 end
 
 function VirtualRecipe:get_constrained_by()
@@ -22,6 +23,13 @@ function VirtualRecipe:get_constrains(item_name)
     end
   end
   return out
+end
+
+function VirtualRecipe:get_links()
+  return {}
+end
+
+function VirtualRecipe:update_rate()
 end
 
 local M = {}
