@@ -104,8 +104,8 @@ local function update_tooltip(self, button)
     for _, constraint in pairs(constrains) do
       components[#components+1] = {
         "planner-gui.item-rate-line",
-        constrained_recipe.localised_name,
-        math.abs(self.item_rates[item_name]),
+        constraint.localised_name,
+        math.abs(self.current_rates[item_name]),
       }
     end
   end

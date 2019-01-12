@@ -4,7 +4,7 @@ local Recipe = require "Recipe"
 local style = require "gui.style"
 
 local function disable_all_buttons(self)
-  for _, button in pairs(self.arrow_flow) do
+  for _, button in pairs(self.arrow_flow.children) do
     button.enabled = false
   end
   self.remove_button.enabled = false
@@ -68,13 +68,13 @@ local function create(self, parent)
     name = "move_recipe_up_button",
     type = "button",
     style = "column_ordering_ascending_button_style",
-    tooltip = "planner-gui.move-recipe-tooltip",
+    tooltip = {"planner-gui.move-recipe-tooltip"},
   }
   arrow_flow.add{
     name = "move_recipe_down_button",
     type = "button",
     style = "column_ordering_descending_button_style",
-    tooltip = "planner-gui.move-recipe-tooltip",
+    tooltip = {"planner-gui.move-recipe-tooltip"},
   }
 
   self.remove_button = flow.add{
@@ -105,13 +105,13 @@ end
 
 local RecipeFlow = {}
 
+function RecipeFlow:complete_link()
+  self:update()
+end
+
 function RecipeFlow:enable_buttons_for_link(is_product, item_name)
   disable_all_buttons(self)
   self.item_rates_flow:enable_buttons_for_link(item_name)
-end
-
-function RecipeFlow:complete_link()
-  self:update()
 end
 
 function RecipeFlow:update()

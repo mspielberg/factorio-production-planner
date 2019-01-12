@@ -8,20 +8,11 @@ local function add_header_flow(parent)
     direction = "horizontal",
   }
 
-  local recipe_header = flow.add{
-    name = "recipe_label",
-    type = "label",
-    --caption = {"planner-gui.recipe-header"},
+  local padding = flow.add{
+    name = "padding",
+    type = "flow"
   }
-  recipe_header.style.width = style.dimensions.recipe_column_width
-
-  local assembling_machine_header = flow.add{
-    name = "machine_label",
-    type = "label",
-    --caption = {"planner-gui.machine-header"},
-  }
-  assembling_machine_header.style.width =
-    style.dimensions.assembling_machine_column_width
+  padding.style.width = style.dimensions.ingredients_column_offset
 
   local ingredients_header = flow.add{
     name = "ingredients_label",

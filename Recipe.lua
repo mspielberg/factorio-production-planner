@@ -140,7 +140,14 @@ end
 function Recipe:get_links()
   local out = {}
   for _, constraint in pairs(self.constrains) do
-    out[constraint.item] = { localised_name = constraint.recipe.localised_name }
+    local item_name = constraint.item
+    if not out[item_name] then out[item_name] = { constrains = {} } end
+    table.insert(
+      out[item_name].constrains,
+      {
+        localised_name = constraint.recipe.localised_name,
+      }
+    )
   end
   for _, constraint in pairs(self.constrained_by) do
     local item_name = constraint.item
