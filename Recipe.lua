@@ -190,7 +190,7 @@ end
 
 local M = {}
 
-function M.new(name)
+function M.new(recipe_name)
   local self = {
     name = "",
     localised_name = "",
@@ -201,7 +201,22 @@ function M.new(name)
     constrained_by = {},
   }
   M.restore(self)
-  self:set_recipe(name)
+  self:set_recipe(recipe_name)
+  return self
+end
+
+function M.new_virtual(item_name, rate)
+  local proto = game.item_prototypes[item_name] or game.fluid_prototypes[item_name]
+  local self = {
+    name = item_name,
+    localised_name = proto.localised_name,
+    rate = 1,
+    energy = 0,
+    items = {[item_name] = rate},
+    constrains = {},
+    constrained_by = {},
+  }
+  M.restore(self)
   return self
 end
 

@@ -1,5 +1,4 @@
 local Recipe = require "Recipe"
-local VirtualRecipe = require "VirtualRecipe"
 
 local ProductionLine = {}
 
@@ -21,8 +20,18 @@ function ProductionLine:change_recipe(args)
     self.recipes[index] = Recipe.new(recipe_name)
   else
     self.recipes[index] =
-      VirtualRecipe.new(args.virtual_recipe_name, args.virtual_recipe_rate)
+      Recipe.new_virtual(args.virtual_recipe_name, args.virtual_recipe_rate)
   end
+end
+
+function ProductionLine:get_item_rates()
+  local out = {}
+  for _, recipe in pairs(self.recipes) do
+    local rates = recipe:get_current_rates()
+    for item, rate in pairs(rates)
+    out[item] = (out[item] or 0) + rate
+  end
+  return out
 end
 
 function ProductionLine:remove_recipe(index)

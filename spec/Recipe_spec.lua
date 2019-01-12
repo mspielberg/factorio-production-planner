@@ -1,10 +1,13 @@
 require "busted"
 local inspect = require "inspect"
 local Recipe = require "Recipe"
-local VirtualRecipe = require "VirtualRecipe"
 
 local function setup_mocks()
   _G.game = {
+    item_prototypes = {
+      ["iron-gear-wheel"] = {},
+      ["science-pack-1"] = {},
+    },
     recipe_prototypes = {
       ["electronic-circuit"] = {
         energy = 0.5,
@@ -47,18 +50,18 @@ describe("A Recipe should", function()
 
   describe("adjust rates of constrained recipes", function()
     it("that are direct descendents", function()
-      local constraint = VirtualRecipe.new("iron-gear-wheel", -1)
+      local constraint = Recipe.new_virtual("iron-gear-wheel", -1)
       gear_recipe:add_constraint(constraint, "iron-gear-wheel")
       assert.is_equal(2, plate_recipe.rate) 
     end)
     it("that are indirect descendents", function()
-      local constraint = VirtualRecipe.new("science-pack-1", -1)
+      local constraint = Recipe.new_virtual("science-pack-1", -1)
       sp1_recipe:add_constraint(constraint, "science-pack-1")
       assert.is_equal(2, plate_recipe.rate) 
     end)
 
     it("after removing a constraint", function()
-      local constraint = VirtualRecipe.new("science-pack-1", -1)
+      local constraint = Recipe.new_virtual("science-pack-1", -1)
       sp1_recipe:add_constraint(constraint, "science-pack-1")
       sp1_recipe:remove_constraint(constraint, "science-pack-1")
       assert.is_equal(0, plate_recipe.rate) 
@@ -77,7 +80,7 @@ describe("A Recipe should", function()
 
   describe("allow changing its recipe", function()
     it("preserves matching constraints", function()
-      local constraint = VirtualRecipe.new("science-pack-1", -1)
+      local constraint = Recipe.new_virtual("science-pack-1", -1)
       sp1_recipe:add_constraint(constraint, "science-pack-1")
       gear_recipe:set_recipe("electronic-circuit")
       assert.is_true(plate_recipe:is_constrained_by(gear_recipe))
@@ -85,7 +88,7 @@ describe("A Recipe should", function()
     end)
 
     it("drops broken constraints", function()
-      local constraint = VirtualRecipe.new("science-pack-1", -1)
+      local constraint = Recipe.new_virtual("science-pack-1", -1)
       sp1_recipe:add_constraint(constraint, "science-pack-1")
       assert.is_true(plate_recipe:is_constrained_by(gear_recipe))
       gear_recipe:set_recipe("electronic-circuit")
