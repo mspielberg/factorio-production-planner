@@ -42,6 +42,7 @@ local ProductionLineController = {}
 
 function ProductionLineController:set_production_line(production_line)
   self.production_line = production_line
+  self.view.production_line = production_line
 end
 
 function ProductionLineController:set_recipes(recipes)
@@ -63,6 +64,7 @@ function ProductionLineController:add_recipe(args)
   local recipe_controller = RecipeFlowController.new(recipe_flow, index)
   recipe_controller:set_production_line(self.production_line)
   self.recipe_controllers[index] = recipe_controller
+  self:update()
 end
 
 function ProductionLineController:change_recipe(index, recipe_name)
@@ -88,9 +90,11 @@ function ProductionLineController:complete_link(constrained_index, constraining_
   for _, recipe_controller in pairs(self.recipe_controllers) do
     recipe_controller:complete_link()
   end
+  self:update()
 end
 
 function ProductionLineController:update()
+  self.view:update()
   for _, recipe_controller in pairs(self.recipe_controllers) do
     recipe_controller:update()
   end

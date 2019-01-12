@@ -193,6 +193,7 @@ local M = {}
 function M.new(recipe_name)
   local self = {
     name = "",
+    is_virtual = false,
     localised_name = "",
     rate = 0, -- crafts/s
     energy = 0, -- only used to calculate number of needed crafting machines
@@ -209,6 +210,7 @@ function M.new_virtual(item_name, rate)
   local proto = game.item_prototypes[item_name] or game.fluid_prototypes[item_name]
   local self = {
     name = item_name,
+    is_virtual = true,
     localised_name = proto.localised_name,
     rate = 1,
     energy = 0,

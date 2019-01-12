@@ -24,12 +24,20 @@ function ProductionLine:change_recipe(args)
   end
 end
 
-function ProductionLine:get_item_rates()
+function ProductionLine:get_current_rates()
   local out = {}
   for _, recipe in pairs(self.recipes) do
-    local rates = recipe:get_current_rates()
-    for item, rate in pairs(rates)
-    out[item] = (out[item] or 0) + rate
+    if not recipe.is_virtual then
+      local rates = recipe:get_current_rates()
+      for item, rate in pairs(rates) do
+        out[item] = (out[item] or 0) + rate
+      end
+    end
+  end
+  for item, rate in pairs(out) do
+    if rate == 0 then
+      out[item] = nil
+    end
   end
   return out
 end
