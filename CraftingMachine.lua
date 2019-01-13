@@ -1,5 +1,6 @@
 local inspect = require "inspect"
 
+
 local CraftingMachine = {}
 
 function CraftingMachine:set_module_count(name, count)
@@ -102,6 +103,7 @@ function CraftingMachine:tooltip()
 end
 
 local M = {}
+local meta = { __index = CraftingMachine }
 
 function M.new(name)
   local self = {
@@ -112,7 +114,28 @@ function M.new(name)
     beacon_speed_bonus = 0,
     beacon_productivity_bonus = 0,
   }
-  return setmetatable(self, { __index = CraftingMachine })
+  return M.restore(self)
+end
+
+function M.restore(self)
+  return setmetatable(self, meta)
+end
+
+function M.default_crafting_machines()
+  local recipe_categories = {}
+  for _, recipe in pairs(game.recipe_prototypes) do
+    recipe_categories[recipe.category] = true
+  end
+  local crafting_machines = {}
+  for category in pairs(recipe_categories) do
+    for name, entity in pairs(game.entity_prototypes) do
+      if entity.crafting_categories and entity.crafting_categories[category] then
+        crafting_machines[category] = M.new(name)
+        break
+      end
+    end
+  end
+  return crafting_machines
 end
 
 function M.default_for(recipe)

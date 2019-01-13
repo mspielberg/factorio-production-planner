@@ -1,3 +1,4 @@
+local inspect = require "inspect"
 local Recipe = require "Recipe"
 
 local ProductionLine = {}
@@ -17,7 +18,10 @@ function ProductionLine:change_recipe(args)
   if recipe then
     recipe:set_recipe(recipe_name)
   elseif recipe_name then
-    self.recipes[index] = Recipe.new(recipe_name)
+    local recipe = Recipe.new(recipe_name)
+    local category = game.recipe_prototypes[recipe_name].category
+    recipe.crafting_machine = self.planner.default_crafting_machines[category]
+    self.recipes[index] = recipe
   else
     self.recipes[index] =
       Recipe.new_virtual(args.virtual_recipe_name, args.virtual_recipe_rate)
@@ -79,8 +83,9 @@ end
 local M = {}
 local meta = { __index = ProductionLine }
 
-function M.new()
+function M.new(planner)
   local self = {
+    planner = planner,
     crafting_machines = {},
     recipes = {},
     constraints = {},

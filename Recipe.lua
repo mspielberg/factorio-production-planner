@@ -44,7 +44,7 @@ end
 
 local function clear_constraints(self)
   for i, constraint in pairs(self.constrained_by) do
-    self:remove_constraint(self, constraint.recipe, constraint.item)
+    self:remove_constraint(constraint.recipe, constraint.item)
   end
   for i, constraint in pairs(self.constrains) do
     constraint.recipe:remove_constraint(self, constraint.item)
@@ -227,6 +227,7 @@ function M.new_virtual(item_name, rate)
     name = item_name,
     is_virtual = true,
     localised_name = proto.localised_name,
+    crafting_machine = nil,
     rate = 1,
     energy = 0,
     items = {[item_name] = rate},
