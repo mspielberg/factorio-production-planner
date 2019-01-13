@@ -32,13 +32,17 @@ local function update_recipe_button(self, recipe)
 end
 
 local function update_crafting_machine_button(self, recipe)
-  local crafting_machine = self.crafting_machine
+  local crafting_machine = recipe.crafting_machine
   if recipe.is_virtual then
     self.crafting_machine_button.sprite = "item/infinity-chest"
+    self.crafting_machine_button.tooltip = {"planner-gui.fixed-rate-recipe"}
+    self.crafting_machine_button.number = 0
     self.crafting_machine_button.enabled = false
   elseif crafting_machine then
     self.crafting_machine_button.sprite = "entity/"..crafting_machine.name
     self.crafting_machine_button.tooltip = crafting_machine:tooltip()
+    self.crafting_machine_button.number =
+      recipe.energy * recipe.rate / crafting_machine:effective_speed()
     self.crafting_machine_button.enabled = true
   end
 end
@@ -63,7 +67,10 @@ local function create(self, parent)
     type = "flow",
     direction = "vertical",
   }
+  arrow_flow.style.width = 22
+  arrow_flow.style.height = 36
   self.arrow_flow = arrow_flow
+
   arrow_flow.add{
     name = "move_recipe_up_button",
     type = "button",
