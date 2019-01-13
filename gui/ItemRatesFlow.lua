@@ -63,12 +63,10 @@ end
 local function update_styles(self)
   for item_name, link in pairs(self.links) do
     local button = self.ingredients_table[item_name] or self.products_table[item_name]
-    local style
+    local style = "slot_button"
     if link.constrains then style = "green_slot_button" end
     if link.constrained_by then style = "slot_with_filter_button" end
-    if style then
-      button.style = style
-    end
+    button.style = style
   end
 end
 
