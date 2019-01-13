@@ -43,6 +43,7 @@ function ProductionLine:get_current_rates()
 end
 
 function ProductionLine:remove_recipe(index)
+  self.recipes[index]:clear_constraints()
   table.remove(self.recipes, index)
 end
 

@@ -39,7 +39,16 @@ local function add_constraint(self, recipe, item_name)
     end
   end
   self.constrained_by[#self.constrained_by+1] = { recipe = recipe, item = item_name }
-  recipe.constrains[#recipe.constrains+1] = { recipe = self, item = item_name}
+  recipe.constrains[#recipe.constrains+1] = { recipe = self, item = item_name }
+end
+
+local function clear_constraints(self)
+  for i, constraint in pairs(self.constrained_by) do
+    self:remove_constraint(self, constraint.recipe, constraint.item)
+  end
+  for i, constraint in pairs(self.constrains) do
+    constraint.recipe:remove_constraint(self, constraint.item)
+  end
 end
 
 local function remove_constraint(self, recipe, item_name)
@@ -82,6 +91,10 @@ local Recipe = {}
 function Recipe:add_constraint(recipe, item_name)
   add_constraint(self, recipe, item_name)
   update_rate(self)
+end
+
+function Recipe:clear_constraints()
+  clear_constraints(self)
 end
 
 function Recipe:remove_constraint(recipe, item_name)
@@ -141,7 +154,8 @@ function Recipe:get_links()
   local out = {}
   for _, constraint in pairs(self.constrains) do
     local item_name = constraint.item
-    if not out[item_name] then out[item_name] = { constrains = {} } end
+    if not out[item_name] then out[item_name] = {} end
+    if not out[item_name].constrains then out[item_name].constrains = {} end
     table.insert(
       out[item_name].constrains,
       {
@@ -151,7 +165,8 @@ function Recipe:get_links()
   end
   for _, constraint in pairs(self.constrained_by) do
     local item_name = constraint.item
-    if not out[item_name] then out[item_name] = { constrained_by = {} } end
+    if not out[item_name] then out[item_name] = {} end
+    if not out[item_name].constrained_by then out[item_name].constrained_by = {} end
     table.insert(
       out[item_name].constrained_by,
       {

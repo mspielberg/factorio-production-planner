@@ -35,7 +35,7 @@ local function on_remove_recipe_button(self, recipe_index)
     recipe_controllers[i]:set_index(i)
   end
   recipe_controllers[num_controllers] = nil
-  log(inspect{after=self.recipe_controllers})
+  self:update()
 end
 
 local ProductionLineController = {}
