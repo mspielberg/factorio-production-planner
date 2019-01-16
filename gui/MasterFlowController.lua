@@ -1,3 +1,4 @@
+local CraftingMachinePickerController = require "gui.CraftingMachinePickerController"
 local Dispatcher = require "gui.Dispatcher"
 local inspect = require "inspect"
 local MasterFlow = require "gui.MasterFlow"
@@ -116,12 +117,15 @@ function M.new(view)
     view.recipe_picker_frame,
     view.recipe_picker_frame.picker_flow,
     player)
+  local crafting_machine_picker =
+    CraftingMachinePickerController.new(view.crafting_machine_picker)
 
   local self = {
     state = { name = IDLE },
     view = view,
     planner_frame = PlannerFrameController.new(view.planner_frame, recipe_picker),
     recipe_picker = recipe_picker,
+    crafting_machine_picker = crafting_machine_picker,
   }
 
   return M.restore(self)

@@ -1,6 +1,5 @@
 local inspect = require "inspect"
 
-
 local CraftingMachine = {}
 
 function CraftingMachine:set_module_count(name, count)
@@ -147,6 +146,17 @@ function M.default_for(recipe)
       return M.new(entity_proto.name)
     end
   end
+end
+
+function M.entity_names_for_category(category_name)
+  local out = {}
+  for entity_name, entity_proto in pairs(game.entity_prototypes) do
+    if entity_proto.crafting_categories
+    and entity_proto.crafting_categories[category] then
+      out[#out+1] = entity_name
+    end
+  end
+  return out
 end
 
 return M

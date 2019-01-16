@@ -1,4 +1,5 @@
 local mod_gui = require "mod-gui"
+local CraftingMachinePickerFrame = require "gui.CraftingMachinePickerFrame"
 local PlannerFrame = require "gui.PlannerFrame"
 local RecipePickerFrame = require "gui.RecipePickerFrame"
 
@@ -38,6 +39,7 @@ function M.new(player)
     gui = flow,
     planner_frame = PlannerFrame.new(flow),
     recipe_picker_frame = RecipePickerFrame.new(flow),
+    crafting_machine_picker_frame = CraftingMachinePickerFrame.new(flow),
   }
   return M.restore(self)
 end
