@@ -88,9 +88,21 @@ local meta = { __index = ProductionLineFlow }
 
 function ProductionLineFlow:add_recipe()
   local index = #self.recipe_flows + 1
-  local recipe_flow = RecipeFlow.new(self.recipes_flow)
+  local recipe_flow = RecipeFlow.new(self.recipes_flow, index)
   self.recipe_flows[index] = recipe_flow
   return recipe_flow
+end
+
+function ProductionLineFlow:set_production_line(production_line)
+  self.production_line = production_line
+  for i=#production_line.recipes+1,#self.recipe_flows do
+    self.recipe_flows[i]:destroy()
+    self.recipe_flows[i] = nil
+  end
+  for i=#self.recipe_flows+1,#production_line.recipes do
+    self.recipe_flows[i] = RecipeFlow.new(self.recipes_flow)
+  end
+  self:update()
 end
 
 function ProductionLineFlow:set_recipe(index, recipe)

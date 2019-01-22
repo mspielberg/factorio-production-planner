@@ -6,8 +6,7 @@ local RecipeFlow = require "gui.RecipeFlow"
 local RecipeFlowController = {}
 
 function RecipeFlowController:set_production_line(production_line)
-  self.view.production_line = production_line
-  self.view:update()
+  self.view:set_production_line(production_line)
 end
 
 function RecipeFlowController:set_index(index)

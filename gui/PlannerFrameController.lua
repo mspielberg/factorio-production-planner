@@ -20,24 +20,24 @@ function PlannerFrameController:change_recipe(index, recipe_name)
   self.production_line:change_recipe(index, recipe_name)
 end
 
-function PlannerFrameController:update()
-  self.production_line:update()
+function PlannerFrameController:complete_link(constrained_index, constraining_index, item_name)
+  self.production_line:complete_link(constrained_index, constraining_index, item_name)
 end
 
 function PlannerFrameController:prepare_for_link(recipe_index, item_name)
   self.production_line:prepare_for_link(recipe_index, item_name)
 end
 
-function PlannerFrameController:complete_link(constrained_index, constraining_index, item_name)
-  self.production_line:complete_link(constrained_index, constraining_index, item_name)
+function PlannerFrameController:update()
+  self.production_line:update()
 end
 
 local M = {}
 local meta = { __index = PlannerFrameController }
 
-function M.new(view, recipe_picker)
+function M.new(view, recipe_picker, player_index)
   local self = {
-    planner = Planner.new(),
+    planner = Planner.instance(player_index),
     view = view,
 
     production_line = nil,

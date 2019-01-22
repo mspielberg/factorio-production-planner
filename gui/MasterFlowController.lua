@@ -83,6 +83,10 @@ end
 
 local MasterFlowController = {}
 
+function MasterFlowController:destroy()
+  self.view:destroy()
+end
+
 -- event handlers
 
 function MasterFlowController:on_gui_click(event)
@@ -112,7 +116,8 @@ local M = {}
 local meta = { __index = MasterFlowController }
 
 function M.new(view)
-  local player = game.players[view.gui.player_index]
+  local player_index = view.gui.player_index
+  local player = game.players[player_index]
   local recipe_picker = RecipePickerController.new(
     view.recipe_picker_frame,
     view.recipe_picker_frame.picker_flow,
@@ -123,7 +128,7 @@ function M.new(view)
   local self = {
     state = { name = IDLE },
     view = view,
-    planner_frame = PlannerFrameController.new(view.planner_frame, recipe_picker),
+    planner_frame = PlannerFrameController.new(view.planner_frame, recipe_picker, player_index),
     recipe_picker = recipe_picker,
     crafting_machine_picker = crafting_machine_picker,
   }

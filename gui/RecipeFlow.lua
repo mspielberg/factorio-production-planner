@@ -121,6 +121,11 @@ function RecipeFlow:enable_buttons_for_link(is_product, item_name)
   self.item_rates_flow:enable_buttons_for_link(item_name)
 end
 
+function RecipeFlow:set_production_line(production_line)
+  self.production_line = production_line
+  self:update()
+end
+
 function RecipeFlow:update()
   local recipe = self.production_line.recipes[self.index]
   self.remove_button.enabled = true
@@ -152,7 +157,8 @@ function M.new(parent, index)
     crafting_machine = nil,
   }
   self.gui = create(self, parent)
-  return M.restore(self)
+  M.restore(self)
+  return self
 end
 
 function M.restore(self)

@@ -18,6 +18,18 @@ function M.new()
   return M.restore(self)
 end
 
+function M.instance(player_index)
+  if not global.planners then
+    global.planners = {}
+  end
+  local planner = global.planners[player_index]
+  if not planner then
+    planner = M.new()
+    global.planners[player_index] = planner
+  end
+  return planner
+end
+
 function M.restore(self)
   for _, line in ipairs(self.production_lines) do
     ProductionLine.restore(line)

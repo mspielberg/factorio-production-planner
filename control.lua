@@ -30,3 +30,30 @@ script.on_load(on_load)
 for name, handler in pairs(event_handlers) do
   script.on_event(defines.events[name], handler)
 end
+
+remote.add_interface(
+  "planner",
+  {
+    gprint = function(...)
+      local root = require "mod-gui".get_frame_flow(game.player)
+      local elem = root
+      for _, name in ipairs{...} do
+        elem = elem[name] or elem.children[name]
+      end
+      local child_names = {}
+      for index, child in ipairs(elem.children) do
+        child_names[#child_names+1] = child.name or index
+      end
+      game.print(require "inspect"{
+        name = elem.name,
+        children = child_names,
+      })
+    end,
+
+    reset = function(...)
+      local player_index = game.player.index
+      global.master_flows[player_index]:destroy()
+      on_player_created{player_index = player_index}
+    end,
+  }
+)

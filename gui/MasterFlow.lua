@@ -28,6 +28,11 @@ function MasterFlowView:toggle_show_hide()
   style.visible = not style.visible
 end
 
+function MasterFlowView:destroy()
+  self.gui.destroy()
+  self.show_hide_button.destroy()
+end
+
 local M = {}
 
 local meta = { __index = MasterFlowView }

@@ -23,35 +23,37 @@ local function on_move_recipe_button(self, event)
 end
 
 local function on_remove_recipe_button(self, recipe_index)
-  log(inspect{before=self.recipe_controllers, recipe_index=recipe_index})
   self.production_line:remove_recipe(recipe_index)
 
   local recipe_controllers = self.recipe_controllers
-  recipe_controllers[recipe_index]:destroy()
+  recipe_controllers[#recipe_controllers]:destroy()
+  recipe_controllers[#recipe_controllers] = nil
 
   local num_controllers = #recipe_controllers
-  for i=recipe_index, num_controllers-1 do
-    recipe_controllers[i] = recipe_controllers[i+1]
-    recipe_controllers[i]:set_index(i)
+  for i=recipe_index,num_controllers do
+    recipe_controllers[i]:update()
   end
-  recipe_controllers[num_controllers] = nil
   self:update()
 end
 
 local ProductionLineController = {}
 
 function ProductionLineController:set_production_line(production_line)
+  local num_recipes = #production_line.recipes
   self.production_line = production_line
-  self.view.production_line = production_line
-end
+  self.view:set_production_line(production_line)
 
-function ProductionLineController:set_recipes(recipes)
-  for i, recipe_controller in ipairs(self.recipe_controllers) do
-    recipe_controller.destroy()
+  local recipe_controllers = self.recipe_controllers
+  for i=num_recipes+1,#recipe_controllers do
+    self.recipe_controllers[i].destroy()
     self.recipe_controllers[i] = nil
   end
-  for i, recipe in ipairs(recipes) do
-    self.recipe_controllers[i] = RecipeController.new(self, i, recipe)
+  for i=#recipe_controllers+1,num_recipes do
+    self.recipe_controllers[i] =
+      RecipeFlowController.new(self.view.recipe_flows[i], i)
+  end
+  for _, recipe_controller in pairs(self.recipe_controllers) do
+    recipe_controller:set_production_line(production_line)
   end
 end
 
@@ -95,8 +97,8 @@ end
 
 function ProductionLineController:update()
   self.view:update()
-  for _, recipe_controller in pairs(self.recipe_controllers) do
-    recipe_controller:update()
+  for _, controller in pairs(self.recipe_controllers) do
+    controller:update()
   end
 end
 
