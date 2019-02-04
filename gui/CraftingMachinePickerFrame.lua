@@ -55,18 +55,19 @@ local meta = { __index = M }
 function M:set_recipe(recipe_name)
   local proto = game.recipe_prototypes[recipe_name]
   self.category = proto.category
+  self.recipe_name = recipe_name
 end
 
 local function restore(self)
   CraftingMachineConfigurationFlow.restore(self.config_flow)
-  setmetatable(self, meta)
+  return setmetatable(self, meta)
 end
 
 local function new(parent)
   local self = {
     recipe_name = "",
     index = 0,
-    category = nil,
+    category_name = nil,
     crafting_machine = nil,
 
     gui = nil,

@@ -26,6 +26,11 @@ function ProductionLine:change_recipe(args)
     self.recipes[index] =
       Recipe.new_virtual(args.virtual_recipe_name, args.virtual_recipe_rate)
   end
+
+  local crafting_machine = args.crafting_machine
+  if crafting_machine then
+    self.crafting_machines[index] = crafting_machine
+  end
 end
 
 function ProductionLine:get_current_rates()

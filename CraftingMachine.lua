@@ -166,9 +166,10 @@ end
 local M = {}
 local meta = { __index = CraftingMachine }
 
-function M.new(name)
+function M.new(name, category)
   local self = {
     name = name,
+    category = category,
     base_speed = game.entity_prototypes[name].crafting_speed,
     modules = {}, -- = { [module_name] = count, ... }
     beacon_info = nil, -- = { name = "beacon", count = 1, module_name = "speed-module-1", module_count = 2 }
@@ -188,25 +189,27 @@ function M.default_for(recipe)
   for _, entity_proto in pairs(game.entity_prototypes) do
     if entity_proto.crafting_categories
     and entity_proto.crafting_categories[category] then
-      return M.new(entity_proto.name)
+      return M.new(entity_proto.name, category)
     end
   end
 end
 
 local entity_names_for_category_cache = {}
 function M.entity_names_for_category(category_name)
+  log(category_name)
   local entity_names = entity_names_for_category_cache[category_name]
   if not entity_names then
     entity_names = {}
     for entity_name, entity_proto in pairs(game.entity_prototypes) do
       if entity_proto.crafting_categories
-      and entity_proto.crafting_categories[category] then
+      and entity_proto.crafting_categories[category_name] then
         entity_names[#entity_names+1] = entity_name
       end
     end
     entity_names_for_category_cache[category_name] = entity_names
   end
 
+  log("returning: "..inspect(entity_names))
   return entity_names
 end
 

@@ -1,3 +1,4 @@
+local console = require "console"
 local Dispatcher = require "gui.Dispatcher"
 local MasterFlowController = require "gui.MasterFlowController"
 local MasterFlow = require "gui.MasterFlow"
@@ -19,8 +20,13 @@ local function on_player_created(event)
   global.master_flows[player_index] = MasterFlowController.new(master_flow)
 end
 
+local function on_gui_click(event)
+  console.on_gui_click(event)
+  Dispatcher.dispatch(event)
+end
+
 local event_handlers = {
-  on_gui_click = Dispatcher.dispatch,
+  on_gui_click = on_gui_click,
   on_gui_text_changed = Dispatcher.dispatch,
   on_player_created = on_player_created,
 }
@@ -34,6 +40,8 @@ end
 remote.add_interface(
   "planner",
   {
+    console = console.create_gui,
+
     gprint = function(...)
       local root = require "mod-gui".get_frame_flow(game.player)
       local elem = root

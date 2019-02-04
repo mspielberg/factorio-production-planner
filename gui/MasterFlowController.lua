@@ -123,7 +123,7 @@ function M.new(view)
     view.recipe_picker_frame.picker_flow,
     player)
   local crafting_machine_picker =
-    CraftingMachinePickerController.new(view.crafting_machine_picker)
+    CraftingMachinePickerController.new(view.crafting_machine_picker_frame)
 
   local self = {
     state = { name = IDLE },
@@ -141,6 +141,7 @@ function M.restore(self)
   MasterFlow.restore(self.view)
   PlannerFrameController.restore(self.planner_frame)
   RecipePickerController.restore(self.recipe_picker)
+  CraftingMachinePickerController.restore(self.crafting_machine_picker)
   Dispatcher.register(self, self.view.show_hide_button)
   Dispatcher.register(self, self.view.gui)
   return self
