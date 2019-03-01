@@ -24,6 +24,11 @@ local function on_change_recipe_button(self, event)
   self.recipe_picker:show()
 end
 
+local function on_crafting_machine_button(self, event)
+  self.crafting_machine_picker:set_recipe(event.context.recipe)
+  self.crafting_machine_picker:show()
+end
+
 local function on_item_button(self, event)
   local state = self.state
   local context = event.context
@@ -102,6 +107,9 @@ function MasterFlowController:on_gui_click(event)
     return true
   elseif element.parent.name == "ingredients" or element.parent.name == "products" then
     on_item_button(self, event)
+    return true
+  elseif element.name == "crafting_machine" then
+    on_crafting_machine_button(self, event)
     return true
   elseif element.name == "cancel_recipe_picker_button" then
     on_recipe_picker_cancelled(self, event)

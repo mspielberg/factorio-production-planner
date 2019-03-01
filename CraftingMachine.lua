@@ -16,7 +16,7 @@ end
 
 local function allowed_in_machine(self, recipe_name)
   local out = {}
-  local allowed_effects = game.entity_prototypes[self.name].allowed_effects
+  local allowed_effects = game.entity_prototypes[self.entity_name].allowed_effects
   for item_name, proto in pairs(game.item_prototypes) do
     if allowed_by_limitations(proto, recipe_name) then
       local all_effects_allowed = true
@@ -122,6 +122,10 @@ function CraftingMachine:effective_speed()
   return self.base_speed * speed_multiplier * productivity_multiplier
 end
 
+function CraftingMachine:set_entity_name(name)
+  self.entity_name = name
+end
+
 function CraftingMachine:set_module_count(name, count)
   if count == 0 then
     self.modules[name] = nil
@@ -152,7 +156,7 @@ function CraftingMachine:set_beacon_count(beacon_name, beacon_count, module_name
 end
 
 function CraftingMachine:tooltip()
-  local proto = game.entity_prototypes[self.name]
+  local proto = game.entity_prototypes[self.entity_name]
   return {
     "planner-gui.crafting-machine-tooltip",
     proto.localised_name,
@@ -166,11 +170,11 @@ end
 local M = {}
 local meta = { __index = CraftingMachine }
 
-function M.new(name, category)
+function M.new(entity_name, category)
   local self = {
-    name = name,
+    entity_name = entity_name,
     category = category,
-    base_speed = game.entity_prototypes[name].crafting_speed,
+    base_speed = game.entity_prototypes[entity_name].crafting_speed,
     modules = {}, -- = { [module_name] = count, ... }
     beacon_info = nil, -- = { name = "beacon", count = 1, module_name = "speed-module-1", module_count = 2 }
     beacon_speed_bonus = 0,
@@ -201,7 +205,8 @@ function M.entity_names_for_category(category_name)
   if not entity_names then
     entity_names = {}
     for entity_name, entity_proto in pairs(game.entity_prototypes) do
-      if entity_proto.crafting_categories
+      if entity_proto.type ~= "player"
+      and entity_proto.crafting_categories
       and entity_proto.crafting_categories[category_name] then
         entity_names[#entity_names+1] = entity_name
       end

@@ -27,6 +27,7 @@ end
 
 local event_handlers = {
   on_gui_click = on_gui_click,
+  on_gui_selection_state_changed = Dispatcher.dispatch,
   on_gui_text_changed = Dispatcher.dispatch,
   on_player_created = on_player_created,
 }
