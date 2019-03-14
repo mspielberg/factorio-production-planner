@@ -1,10 +1,10 @@
+local Dispatcher = require "gui.Dispatcher"
+
 local M = {}
 local meta = { __index = M }
 
 function M:on_gui_selection_state_changed(event)
   local element = event.element
-  if element == self.view.crafting_machine_dropdown then
-    self.
 end
 
 function M:hide()

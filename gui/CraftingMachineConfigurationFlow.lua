@@ -62,7 +62,7 @@ local M = {}
 local meta = { __index = M }
 
 function M:set_crafting_machine(crafting_machine)
-  log(inspect(crafting_machine))
+  log(serpent.block(crafting_machine))
   self.crafting_machine = crafting_machine
   self:update()
 end

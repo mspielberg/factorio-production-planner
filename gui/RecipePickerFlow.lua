@@ -1,9 +1,30 @@
 local function create(self, parent)
   self.gui = parent.add{
     name = "recipe_picker",
+    type = "scroll-pane",
+    horizontal_scroll_policy = "never",
+    vertical_scroll_policy = "auto-and-reserve-space",
+  }
+  self.gui.style = "scroll_pane_under_subheader"
+  self.gui.style.horizontally_squashable = false
+  self.gui.style.vertically_squashable = false
+
+  local groups_table = self.gui.add{
+    name = "groups",
+    type = "table",
+    column_count = 6,
+    style = "slot_table",
+  }
+  groups_table.enabled = false
+
+  local group_flow = self.gui.add{
+    name = "subgroups",
     type = "flow",
     direction = "vertical",
+    style = "slot_table_spacing_vertical_flow",
   }
+  group_flow.style.minimal_width = 378
+  group_flow.enabled = false
 end
 
 local function reindex_by_name(t)
@@ -68,45 +89,20 @@ local function add_subgroup_flow(self, parent, subgroup)
   end
 end
 
-local function add_group_flow(self, group)
-  local scroll = self.gui.add{
-    name = group.name,
-    type = "scroll-pane",
-    horizontal_scroll_policy = "never",
-    vertical_scroll_policy = "auto-and-reserve-space",
-  }
-  scroll.style.width = 383
-  self.group_flow = scroll
-  local group_flow = scroll.add{
-    name = "subgroups",
-    type = "flow",
-    direction = "vertical",
-    style = "slot_table_spacing_vertical_flow",
-  }
-  group_flow.enabled = false
-
+local function fill_subgroups_flow(self, group)
+  local subgroups_flow = self.gui.subgroups
+  subgroups_flow.clear()
   for _, subgroup in ipairs(group.subgroups) do
-    add_subgroup_flow(self, group_flow, subgroup)
+    add_subgroup_flow(self, subgroups_flow, subgroup)
   end
 end
 
-local function remove_group_flow(self)
-  self.group_flow.destroy()
-  self.group_flow = nil
-end
-
-local function add_groups_flow(self, groups)
-  local flow = self.gui.add{
-    name = "groups",
-    type = "flow",
-    direction = "horizontal",
-    style = "slot_table_spacing_horizontal_flow",
-  }
-  self.groups_flow = flow
-
+local function fill_groups_table(self, groups)
+  local groups_table = self.gui.groups
+  groups_table.clear()
   for _, group in ipairs(groups) do
     local group_name = group.name
-    local group_button = flow.add{
+    local group_button = groups_table.add{
       name = group_name,
       type = "sprite-button",
       style = "image_tab_slot",
@@ -116,12 +112,7 @@ local function add_groups_flow(self, groups)
   end
 end
 
-local function remove_groups_flow(self)
-  self.groups_flow.destroy()
-  self.groups_flow = nil
-end
-
-local comparator = function(a,b) return a.order < b.order end
+local function compare_by_order(a, b) return a.order < b.order end
 local function flatten_and_sort_by_order(t)
   local i = 1
   for k,v in pairs(t) do
@@ -129,7 +120,7 @@ local function flatten_and_sort_by_order(t)
     t[k] = nil
     i = i + 1
   end
-  table.sort(t, comparator)
+  table.sort(t, compare_by_order)
 end
 
 local function group_recipes(recipes)
@@ -141,7 +132,6 @@ local function group_recipes(recipes)
     if not group then
       group = {
         name = group_name,
-        lua_group = lua_group,
         order = lua_group.order,
         subgroups = {},
       }
@@ -155,16 +145,14 @@ local function group_recipes(recipes)
     if not subgroup then
       subgroup = {
         name = subgroup_name,
-        lua_group = lua_subgroup,
         order = lua_subgroup.order,
         recipes = {},
       }
       subgroups[subgroup_name] = subgroup
     end
 
-    local recipes = subgroup.recipes
     local recipe_name = recipe.name
-    recipes[recipe_name] = {
+    subgroup.recipes[recipe_name] = {
       name = recipe_name,
       lua_recipe = recipe,
       order = recipe.order,
@@ -185,33 +173,25 @@ end
 local RecipePickerFlow = {}
 
 function RecipePickerFlow:set_recipes(recipes)
-  if self.group_flow then
-    remove_group_flow(self)
-  end
-  if self.groups_flow then
-    remove_groups_flow(self)
-  end
-
   local groups = group_recipes(recipes)
   self.groups = groups
-  if next(groups) then
-    local initial_group_name = groups[1].name
-    add_groups_flow(self, groups)
-    reindex_by_name(groups)
-    self:select_group(initial_group_name)
+  local initial_group = groups[1]
+  fill_groups_table(self, groups)
+  reindex_by_name(groups)
+  if initial_group then
+    self:select_group(initial_group.name)
+  else
+    -- no recipes
+    self.gui.subgroups.clear()
   end
 end
 
 function RecipePickerFlow:select_group(group_name)
-  local current_group_flow = self.group_flow
-  if current_group_flow and current_group_flow.name == group_name then return end
-
-  if current_group_flow then
-    self.groups_flow[current_group_flow.name].style = "image_tab_slot"
-    remove_group_flow(self)
+  for _, button in pairs(self.gui.groups.children) do
+    button.style = "image_tab_slot"
   end
-  self.groups_flow[group_name].style = "image_tab_selected_slot"
-  add_group_flow(self, self.groups[group_name])
+  self.gui.groups[group_name].style = "image_tab_selected_slot"
+  fill_subgroups_flow(self, self.groups[group_name])
 end
 
 
@@ -220,10 +200,7 @@ local meta = { __index = RecipePickerFlow }
 
 function M.new(parent)
   local self = {
-    active_group = nil,
     gui = nil,
-    groups_flow = nil,
-    group_flow = nil,
     groups = {},
   }
   create(self, parent)

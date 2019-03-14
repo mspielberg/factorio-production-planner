@@ -1,5 +1,4 @@
 local CraftingMachine = require "CraftingMachine"
-local inspect = require "inspect"
 
 local M = {}
 local meta = { __index = M }

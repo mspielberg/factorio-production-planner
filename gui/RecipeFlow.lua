@@ -58,16 +58,14 @@ local function create(self, parent)
   local flow = parent.add{
     type = "flow",
     direction = "horizontal",
+    style = "centering_horizontal_flow",
   }
-  flow.style.vertical_align = "center"
 
   local arrow_flow = flow.add{
     name = "arrows",
     type = "flow",
     direction = "vertical",
   }
-  arrow_flow.style.width = 22
-  arrow_flow.style.height = 36
   self.arrow_flow = arrow_flow
 
   arrow_flow.add{

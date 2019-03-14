@@ -212,7 +212,7 @@ function M.entity_names_for_category(category_name)
     entity_names_for_category_cache[category_name] = entity_names
   end
 
-  log("returning: "..inspect(entity_names))
+  log("returning: "..serpent.block(entity_names))
   return entity_names
 end
 
