@@ -19,11 +19,16 @@ function ProductionLine:change_recipe(args)
   elseif recipe_name then
     local recipe = Recipe.new(recipe_name)
     local category = game.recipe_prototypes[recipe_name].category
-    recipe.crafting_machine = self.planner.default_crafting_machines[category]
+    recipe.crafting_machine = self.planner.crafting_machine_library:get_default_crafting_machine(category)
     self.recipes[index] = recipe
   else
     self.recipes[index] =
       Recipe.new_virtual(args.virtual_recipe_name, args.virtual_recipe_rate)
+  end
+
+  local crafting_machine = args.crafting_machine
+  if crafting_machine then
+    self.crafting_machines[index] = crafting_machine
   end
 end
 

@@ -38,7 +38,7 @@ local function update_crafting_machine_button(self, recipe)
     self.crafting_machine_button.number = 0
     self.crafting_machine_button.enabled = false
   elseif crafting_machine then
-    self.crafting_machine_button.sprite = "entity/"..crafting_machine.name
+    self.crafting_machine_button.sprite = "entity/"..crafting_machine.entity_name
     self.crafting_machine_button.tooltip = crafting_machine:tooltip()
     self.crafting_machine_button.number =
       recipe.energy * recipe.rate / crafting_machine:effective_speed()

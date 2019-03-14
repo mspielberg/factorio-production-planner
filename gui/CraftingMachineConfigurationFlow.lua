@@ -8,7 +8,7 @@ local function create(self, parent)
   }
   self.gui = flow
 
-  self.crafting_machine_button = flow.add{
+  self.crafting_machine_dropdown = flow.add{
     name = "crafting_machine_dropdown",
     type = "drop-down",
   }
@@ -41,8 +41,8 @@ end
 local function update_crafting_machine_dropdown(self)
   local names = CraftingMachine.entity_names_for_category(self.crafting_machine.category)
   table.sort(names)
+  self.crafting_machine_dropdown.clear_items()
   for _, name in ipairs(names) do
-    self.crafting_machine_dropdown.clear_items()
     self.crafting_machine_dropdown.add_item(game.entity_prototypes[name].localised_name)
   end
 end
@@ -62,6 +62,7 @@ local M = {}
 local meta = { __index = M }
 
 function M:set_crafting_machine(crafting_machine)
+  log(inspect(crafting_machine))
   self.crafting_machine = crafting_machine
   self:update()
 end
@@ -78,7 +79,7 @@ end
 local function new(parent)
   local self = {
     gui = nil,
-    crafting_machine_button = nil,
+    crafting_machine_dropdown = nil,
     module_count_dropdown = nil,
     module_dropdown = nil,
     beacon_count_dropdown = nil,
