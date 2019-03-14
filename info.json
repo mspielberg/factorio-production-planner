@@ -1,8 +1,8 @@
 {
   "name": "planner",
-  "title": "Throughput Planner",
+  "title": "Production Planner",
   "description": "Calculate belt and assembler throughput for complex production lines.",
-  "factorio_version": "0.16",
+  "factorio_version": "0.17",
   "author": "Therax",
   "version": "0.1.0",
   "dependencies": []

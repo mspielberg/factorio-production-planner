@@ -1,5 +1,3 @@
-local inspect = require "inspect"
-
 local function create(self, parent)
   self.gui = parent.add{
     name = "recipe_picker",

@@ -1,4 +1,3 @@
-local inspect = require "inspect"
 local Recipe = require "Recipe"
 
 local ProductionLine = {}

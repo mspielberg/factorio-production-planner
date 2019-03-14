@@ -9,7 +9,7 @@ local function create_frame(self, parent)
     caption = "Select recipe",
   }
   frame.enabled = false
-  frame.style.visible = false
+  frame.visible = false
   self.gui = frame
 
   frame.add{
@@ -34,11 +34,11 @@ end
 local RecipePickerFrame = {}
 
 function RecipePickerFrame:show()
-  self.gui.style.visible = true
+  self.gui.visible = true
 end
 
 function RecipePickerFrame:hide()
-  self.gui.style.visible = false
+  self.gui.visible = false
 end
 
 local M = {}

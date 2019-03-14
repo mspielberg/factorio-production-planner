@@ -1,5 +1,5 @@
-local inspect = require "inspect"
 require "busted"
+local serpent = require "serpent"
 local CraftingMachine = require "CraftingMachine"
 
 local function setup_mocks()

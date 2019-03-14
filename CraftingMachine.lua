@@ -1,5 +1,3 @@
-local inspect = require "inspect"
-
 local function allowed_by_limitations(item_proto, recipe_name)
   if item_proto.type ~= "module" then return false end
   local limitations = item_proto.limitations

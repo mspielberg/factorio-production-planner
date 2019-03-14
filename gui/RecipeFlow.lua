@@ -1,4 +1,3 @@
-local inspect = require "inspect"
 local ItemRatesFlow = require "gui.ItemRatesFlow"
 local Recipe = require "Recipe"
 local style = require "gui.style"
@@ -89,7 +88,6 @@ local function create(self, parent)
     type = "sprite-button",
     sprite = "utility/remove",
   }
-  self.remove_button.style.scaleable = false
   self.remove_button.style.height = 36
   self.remove_button.style.width = 36
 

@@ -17,15 +17,14 @@ local function create_flow(player)
     type = "flow",
     direction = "horizontal",
   }
-  flow.style.visible = false
+  flow.visible = false
   return flow
 end
 
 local MasterFlowView = {}
 
 function MasterFlowView:toggle_show_hide()
-  local style = self.gui.style
-  style.visible = not style.visible
+  self.gui.visible = not self.gui.visible
 end
 
 function MasterFlowView:destroy()

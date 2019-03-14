@@ -1,6 +1,5 @@
 local CraftingMachinePickerController = require "gui.CraftingMachinePickerController"
 local Dispatcher = require "gui.Dispatcher"
-local inspect = require "inspect"
 local MasterFlow = require "gui.MasterFlow"
 local PlannerFrameController = require "gui.PlannerFrameController"
 local RecipePickerController = require "gui.RecipePickerController"
@@ -68,7 +67,7 @@ local function on_recipe_picked(self, event)
     self.recipe_picker:hide()
     self.state = { name = IDLE }
   else
-    error("on_recipe_picked in invalid state "..inspect(self.state))
+    error("on_recipe_picked in invalid state "..serpent.block(self.state))
   end
 end
 

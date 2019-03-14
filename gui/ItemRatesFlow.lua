@@ -1,4 +1,3 @@
-local inspect = require "inspect"
 local style = require "gui.style"
 
 local function add_item_button(self, parent, item_name, rate)

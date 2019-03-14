@@ -1,5 +1,4 @@
 local CraftingMachine = require "CraftingMachine"
-local inspect = require "inspect"
 local ProductionLine = require "ProductionLine"
 
 local Planner = {}

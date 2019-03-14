@@ -1,5 +1,3 @@
-local inspect = require "inspect"
-
 --- returns true if both a and b are item production (+ive) or item consumption (-ive)
 local function same_rate_type(a, b)
   return (a or 0) * (b or 0) > 0

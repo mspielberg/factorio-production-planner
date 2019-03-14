@@ -1,5 +1,4 @@
 local Dispatcher = require "gui.Dispatcher"
-local inspect = require "inspect"
 local Planner = require "Planner"
 local ProductionLineFlow = require "gui.ProductionLineFlow"
 local Recipe = require "Recipe"

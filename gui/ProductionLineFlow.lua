@@ -1,4 +1,3 @@
-local inspect = require "inspect"
 local ItemRatesFlow = require "gui.ItemRatesFlow"
 local RecipeFlow = require "gui.RecipeFlow"
 local style = require "gui.style"
@@ -59,7 +58,6 @@ local function add_recipes_flow(self, parent)
     type = "sprite-button",
     sprite = "utility/add",
   }
-  add_recipe_button.style.scaleable = false
   add_recipe_button.style.height = 36
   add_recipe_button.style.width = 36
   self.add_recipe_button = add_recipe_button

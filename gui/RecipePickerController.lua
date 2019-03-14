@@ -1,5 +1,4 @@
 local Dispatcher = require "gui.Dispatcher"
-local inspect = require "inspect"
 local RecipePickerFrame = require "gui.RecipePickerFrame"
 local RecipePickerFlow = require "gui.RecipePickerFlow"
 local VirtualRecipeFlowController = require "gui.VirtualRecipeFlowController"

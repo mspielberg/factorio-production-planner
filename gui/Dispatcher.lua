@@ -1,7 +1,5 @@
-local inspect = require "inspect"
-
 local function debugp(x)
-  log(inspect(x))
+  log(serpent.block(x))
 end
 
 local event_names = {}

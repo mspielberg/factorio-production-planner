@@ -1,5 +1,4 @@
 local CraftingMachine = require "CraftingMachine"
-local inspect = require "inspect"
 
 local function create(self, parent)
   local flow = parent.add{

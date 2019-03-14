@@ -44,7 +44,7 @@ remote.add_interface(
       for index, child in ipairs(elem.children) do
         child_names[#child_names+1] = child.name or index
       end
-      game.print(require "inspect"{
+      game.print(serpent.block{
         name = elem.name,
         children = child_names,
       })
