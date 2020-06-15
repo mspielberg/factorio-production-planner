@@ -1,6 +1,6 @@
-local data = {}
+local out = {}
 
-data.petro_gas_line = {
+out.petro_gas_line = {
   id = 1,
   steps = {
     {
@@ -26,7 +26,7 @@ data.petro_gas_line = {
   },
 }
 
-data.plastic_line_demand_driven = {
+out.plastic_line_demand_driven = {
   id = 2,
   steps = {
     {
@@ -48,7 +48,7 @@ data.plastic_line_demand_driven = {
   },
 }
 
-data.plastic_line_supply_driven = {
+out.plastic_line_supply_driven = {
   id = 2,
   steps = {
     {
@@ -70,4 +70,44 @@ data.plastic_line_supply_driven = {
   },
 }
 
-return data
+out.seablock_mineral_sludge_line = {
+  steps = {
+    {
+      id = 1,
+      type = "fixed",
+      flow_set = { ["item/slag"] = 7.5 },
+    },
+    {
+      id = 2,
+      recipe = "slag-processing-dissolution",
+      constraints = { ["item/slag"] = {1} },
+    },
+    {
+      id = 3,
+      recipe = "liquid-sulfuric-acid",
+      constraints = { ["fluid/liquid-sulfuric-acid"] = {2} },
+    },
+    {
+      id = 4,
+      recipe = "gas-sulfur-dioxide",
+      constraints = { ["fluid/gas-sulfur-dioxide"] = {3} },
+    },
+    {
+      id = 5,
+      recipe = "yellow-waste-water-purification",
+      constraints = { ["fluid/water-yellow-waste"] = {6} },
+    },
+    {
+      id = 6,
+      recipe = "slag-processing-filtering-1",
+      constraints = { ["fluid/slag-slurry"] = {2} },
+    },
+    {
+      id = 7,
+      recipe = "filter-coal",
+      constraints = { ["item/filter-charcoal"] = {6} },
+    },
+  }
+}
+
+return out

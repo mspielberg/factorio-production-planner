@@ -1,14 +1,22 @@
 require "lldebugger".start()
+local StubAPIAdapter = require "spec.StubAPIAdapter"
+
 local Component = require "src.calc.Component"
-local FAPI = require "src.api.FAPI"
 local FixedStep = require "src.calc.FixedStep"
 local RecipeStep = require "src.calc.RecipeStep"
 local Line = require "src.calc.Line"
 local Planner = require "src.calc.Planner"
-local data = require "spec.data"
+local test_lines = require "spec.test-lines"
 local serpent = require "serpent"
 
-FAPI.activate_debug_api()
+local function round_off(t, places)
+  local factor = 10 ^ places
+  local out = {}
+  for k,v in pairs(t) do
+    out[k] = math.floor(v * factor + 0.5) / factor
+  end
+  return out
+end
 
 describe("A Planner should", function()
   it("add a line", function()
@@ -26,10 +34,10 @@ describe("A Line should", function()
     line:add_step(step1)
     local step2 = RecipeStep.new("electronic-circuit")
     line:add_step(step2)
-    step2:add_constraint(step1.id, ecComponent)
+    step2:add_constraint(step1, ecComponent)
     local step3 = RecipeStep.new("copper-cable")
     line:add_step(step3)
-    step3:add_constraint(step2.id, Component.new("item", "copper-cable"))
+    step3:add_constraint(step2, Component.new("item", "copper-cable"))
     assert.are.same(
       line:get_scaled_flow_set(),
       {
@@ -75,7 +83,7 @@ describe("A Line should", function()
   end)
 
   it("be drivable from supply side", function()
-    local line = Line.restore(data.petro_gas_line)
+    local line = Line.restore(test_lines.petro_gas_line)
     assert.are.same(
       line:get_scaled_flow_set(),
       {
@@ -85,20 +93,36 @@ describe("A Line should", function()
       }
     )
   end)
+
+  it("handle internal loops", function()
+    local line = Line.restore(test_lines.seablock_mineral_sludge_line)
+    assert.are.same(
+      round_off(line:get_scaled_flow_set(), 2),
+      {
+        ["fluid/gas-oxygen"] = -33.75,
+        ["fluid/mineral-sludge"] = 75.0,
+        ["fluid/water-mineralized"] = 12.0,
+        ["fluid/water-purified"] = -48.0,
+        ["item/slag"] = -7.5,
+        ["item/sulfur"] = 0.04,
+        ["item/wood-charcoal"] = -0.3
+      }
+    )
+  end)
 end)
 
 describe("Multiple lines should", function()
   describe("be able to work together", function()
     it("when driven from demand", function()
       local planner = Planner.new()
-      planner:add_line(Line.restore(data.petro_gas_line))
-      local plastic_line = Line.restore(data.plastic_line_demand_driven)
+      planner:add_line(Line.restore(test_lines.petro_gas_line))
+      local plastic_line = Line.restore(test_lines.plastic_line_demand_driven)
       planner:add_line(plastic_line)
       assert.are.same(
-        plastic_line:get_scaled_flow_set(),
+        round_off(plastic_line:get_scaled_flow_set(), 2),
         {
-          ["fluid/crude-oil"] = -153.84615384615,
-          ["fluid/water"] = -203.84615384615,
+          ["fluid/crude-oil"] = -153.85,
+          ["fluid/water"] = -203.85,
           ["item/coal"] = -7.5,
           ["item/plastic-bar"] = 15.0
         }
@@ -107,15 +131,15 @@ describe("Multiple lines should", function()
 
     it("when driven from supply", function()
       local planner = Planner.new()
-      planner:add_line(Line.restore(data.petro_gas_line))
-      local plastic_line = Line.restore(data.plastic_line_supply_driven)
+      planner:add_line(Line.restore(test_lines.petro_gas_line))
+      local plastic_line = Line.restore(test_lines.plastic_line_supply_driven)
       planner:add_line(plastic_line)
       assert.are.same(
-        plastic_line:get_scaled_flow_set(),
+        round_off(plastic_line:get_scaled_flow_set(), 2),
         {
           ["fluid/crude-oil"] = -100.0,
           ["fluid/water"] = -132.5,
-          ["item/coal"] = -4.875,
+          ["item/coal"] = -4.87,
           ["item/plastic-bar"] = 9.75
         }
       )

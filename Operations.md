@@ -25,5 +25,8 @@ Operations:
     On a CrafterPresetLibrary
         add Crafter
         update Crafter
+            should update any steps using the current crafter
+            should display in real time count of steps that can't use the modified Crafter
+            when committed, should change any steps that were using the old crafter and can't use the new crafter to use a new default crafter
         reorder Crafter
         delete Crafter

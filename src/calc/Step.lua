@@ -55,24 +55,24 @@ end
 
 -- @param line Line
 -- @return ComponentFlowSet
-function Step:get_base_flow_set(line)
+function Step:get_base_flow_set()
   error("Step:get_base_flow_set should never be called")
 end
 
 function Step:get_scaled_flow_set(line)
-  return self:get_base_flow_set(self):scale(self:get_rate(line))
+  return self:get_base_flow_set():scale(self:get_rate(line))
 end
 
-function Step:add_constraint(constraining_step_id, component)
+function Step:add_constraint(constraining_step, component)
   local constraints = self.constraints
   constraints[component] = constraints[component] or {}
-  table.insert(constraints[component], constraining_step_id)
+  table.insert(constraints[component], constraining_step.id)
 end
 
-function Step:delete_constraint(constraining_step_id, component)
+function Step:delete_constraint(constraining_step, component)
   local step_ids = self.constraints[component]
   if not step_ids then return self end
-  local k = util.find(step_ids, constraining_step_id)
+  local k = util.find(step_ids, constraining_step.id)
   if not k then return self end
 
   table.remove(step_ids, k)

@@ -65,6 +65,7 @@ end
 
 local function new_from_recipe_name(recipe_name)
   local proto = FAPI.get_recipe_prototype(recipe_name)
+  if not proto then error ("unknown recipe name "..recipe_name) end
   local out = new()
   for _, ingredient in pairs(proto.ingredients) do
     out:add(Component.new(ingredient.type, ingredient.name), -ingredient.amount)
