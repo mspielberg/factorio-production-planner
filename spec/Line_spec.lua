@@ -1,4 +1,6 @@
-require "lldebugger".start()
+if os.getenv("LOCAL_LUA_DEBUGGER_VSCODE") == "1" then
+  require "lldebugger".start()
+end
 local StubAPIAdapter = require "spec.StubAPIAdapter"
 
 local Component = require "src.calc.Component"
@@ -142,6 +144,25 @@ describe("Multiple lines should", function()
           ["item/coal"] = -4.87,
           ["item/plastic-bar"] = 9.75
         }
+      )
+    end)
+
+    it("in multiple levels", function()
+      local planner = Planner.new()
+      planner:add_line(Line.restore(test_lines.geode_loop.sludge))
+      planner:add_line(Line.restore(test_lines.geode_loop.blue_processing))
+      planner:add_line(Line.restore(test_lines.geode_loop.cyan_processing))
+      planner:add_line(Line.restore(test_lines.geode_loop.red_processing))
+      planner:add_line(Line.restore(test_lines.geode_loop.blue_sludge))
+      planner:add_line(Line.restore(test_lines.geode_loop.cyan_sludge))
+      planner:add_line(Line.restore(test_lines.geode_loop.red_sludge))
+      planner:add_line(Line.restore(test_lines.geode_loop.blue_slurry))
+      planner:add_line(Line.restore(test_lines.geode_loop.cyan_slurry))
+      planner:add_line(Line.restore(test_lines.geode_loop.red_slurry))
+      planner:add_line(Line.restore(test_lines.geode_loop.overall))
+      assert.are.same(
+        {},
+        planner.lines[11]:get_scaled_flow_set()
       )
     end)
   end)

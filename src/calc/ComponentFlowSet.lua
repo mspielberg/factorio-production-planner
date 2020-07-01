@@ -71,8 +71,8 @@ local function new_from_recipe_name(recipe_name)
     out:add(Component.new(ingredient.type, ingredient.name), -ingredient.amount)
   end
   for _, product in pairs(proto.products) do
-    local amount = product.amount or
-      ((product.amount_max + product.amount_min) / 2 * product.probability)
+    local amount = (product.amount or (product.amount_max + product.amount_min) / 2)
+      * (product.probability or 1)
     out:add(Component.new(product.type, product.name), amount)
   end
   return out

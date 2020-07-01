@@ -98,6 +98,89 @@ local stub_recipes = {
     },
     products = { { amount = 5, name = "filter-charcoal", type = "item" } }
   },
+  ["solid-geodes"]={
+    ingredients={
+      { amount=40, name="water-heavy-mud", type="fluid" },
+      { amount=25, name="water", type="fluid" }
+    },
+    products={
+      { amount=2, name="geode-blue", probability=0.75, type="item" },
+      { amount=1, name="geode-cyan", probability=0.6, type="item" },
+      { amount=1, name="geode-lightgreen", probability=0.6, type="item" },
+      { amount=1, name="geode-purple", probability=0.75, type="item" },
+      { amount=2, name="geode-red", probability=0.75, type="item" },
+      { amount=1, name="geode-yellow", probability=1, type="item" }
+    }
+  },
+  ["geode-blue-liquify"]={
+    ingredients={
+      { amount=5, name="geode-blue", type="item" },
+      { amount=15, name="sulfuric-acid", type="fluid" }
+    },
+    products={ { amount=20, name="crystal-slurry", type="fluid" } },
+  },
+  ["geode-cyan-liquify"]={
+    ingredients={
+      { amount=5, name="geode-cyan", type="item" },
+      { amount=15, name="sulfuric-acid", type="fluid" }
+    },
+    products={ { amount=50, name="crystal-slurry", type="fluid" } }
+  },
+  ["geode-red-liquify"]={
+    ingredients={
+      { amount=5, name="geode-red", type="item" },
+      { amount=15, name="sulfuric-acid", type="fluid" }
+    },
+    products={ { amount=20, name="crystal-slurry", type="fluid" } }
+  },
+  ["crystal-slurry-filtering-conversion-1"]={
+    ingredients={
+      { amount=50, name="crystal-slurry", type="fluid" },
+      { amount=100, name="water-mineralized", type="fluid" },
+      { amount=1, name="filter-coal", type="item" }
+    },
+    products={
+      { amount=50, name="mineral-sludge", type="fluid" },
+      { amount=40, name="water-yellow-waste", type="fluid" },
+      { amount=1, name="filter-frame", type="item" }
+    }
+  },
+  ["geode-blue-processing"]={
+    ingredients={
+      { amount=2, name="geode-blue", type="item" } },
+    products={
+      { amount=1, name="crystal-dust", type="item" },
+      { amount=2, name="stone-crushed", type="item" }
+    }
+  },
+  ["geode-cyan-processing"]={
+    ingredients={ { amount=2, name="geode-cyan", type="item" } },
+    products={
+      { amount=3, name="crystal-dust", type="item" },
+      { amount=2, name="stone-crushed", type="item" }
+    }
+  },
+  ["geode-red-processing"]={
+    ingredients={ { amount=2, name="geode-red", type="item" } },
+    products={
+      { amount=1, name="crystal-dust", type="item" },
+      { amount=2, name="stone-crushed", type="item" }
+    }
+  },
+  ["water-mineralized"]={
+    ingredients={
+      { amount=100, name="water", type="fluid" },
+      { amount=10, name="stone-crushed", type="item" }
+    },
+    products={ { amount=100, name="water-mineralized", type="fluid" } }
+  },
+  ["crystal-dust-liquify"]={
+    ingredients={
+      { amount=10, name="crystal-dust", type="item" },
+      { amount=15, name="sulfuric-acid", type="fluid" }
+    },
+    products={ { amount=50, name="crystal-slurry", type="fluid" } }
+  }
 }
 
 local StubAPIAdapter = {}

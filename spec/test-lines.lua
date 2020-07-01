@@ -110,4 +110,314 @@ out.seablock_mineral_sludge_line = {
   }
 }
 
+out.geode_loop = {}
+
+out.geode_loop.sludge = {
+  id = 1,
+  steps = {
+    {
+      id = 1,
+      type = "fixed",
+      flow_set = { ["fluid/mineral-sludge"] = -100 },
+    },
+    {
+      id = 6,
+      recipe = "crystal-slurry-filtering-conversion-1",
+      constraints = { ["fluid/mineral-sludge"] = { 1 }, },
+    },
+    {
+      id = 7,
+      recipe = "yellow-waste-water-purification",
+      constraints = { ["fluid/water-yellow-waste"] = { 6 }},
+    },
+  },
+}
+
+out.geode_loop.blue_processing = {
+  id = 2,
+  steps = {
+    {
+      id = 1,
+      type = "fixed",
+      flow_set = { ["fluid/water-mineralized"] = -100 },
+    },
+    {
+      id = 2,
+      recipe = "water-mineralized",
+      constraints = { ["fluid/water-mineralized"] = { 1 }},
+    },
+    {
+      id = 3,
+      recipe = "geode-blue-processing",
+      constraints = { ["item/stone-crushed"] = { 2 }},
+    },
+    {
+      id = 4,
+      recipe = "crystal-dust-liquify",
+      constraints = { ["item/crystal-dust"] = { 3 }},
+    },
+  }
+}
+
+out.geode_loop.cyan_processing = {
+  id = 3,
+  steps = {
+    {
+      id = 1,
+      type = "fixed",
+      flow_set = { ["fluid/water-mineralized"] = -100 },
+    },
+    {
+      id = 2,
+      recipe = "water-mineralized",
+      constraints = { ["fluid/water-mineralized"] = { 1 }},
+    },
+    {
+      id = 3,
+      recipe = "geode-cyan-processing",
+      constraints = { ["item/stone-crushed"] = { 2 }},
+    },
+    {
+      id = 4,
+      recipe = "crystal-dust-liquify",
+      constraints = { ["item/crystal-dust"] = { 3 }},
+    },
+  }
+}
+
+out.geode_loop.red_processing = {
+  id = 4,
+  steps = {
+    {
+      id = 1,
+      type = "fixed",
+      flow_set = { ["fluid/water-mineralized"] = -100 },
+    },
+    {
+      id = 2,
+      recipe = "water-mineralized",
+      constraints = { ["fluid/water-mineralized"] = { 1 }},
+    },
+    {
+      id = 3,
+      recipe = "geode-red-processing",
+      constraints = { ["item/stone-crushed"] = { 2 }},
+    },
+    {
+      id = 4,
+      recipe = "crystal-dust-liquify",
+      constraints = { ["item/crystal-dust"] = { 3 }},
+    },
+  }
+}
+
+out.geode_loop.blue_sludge = {
+  id = 5,
+  steps = {
+    {
+      id = 1,
+      type = "fixed",
+      flow_set = { ["fluid/mineral-sludge"] = -100 },
+    },
+    {
+      id = 2,
+      type = "line",
+      line_id = 1,
+      constraints = { ["fluid/mineral-sludge"] = {1}}
+    },
+    {
+      id = 3,
+      type = "line",
+      line_id = 2,
+      constraints = { ["fluid/water-mineralized"] = {2} }
+    },
+  }
+}
+
+out.geode_loop.cyan_sludge = {
+  id = 6,
+  steps = {
+    {
+      id = 1,
+      type = "fixed",
+      flow_set = { ["fluid/mineral-sludge"] = -100 },
+    },
+    {
+      id = 2,
+      type = "line",
+      line_id = 1,
+      constraints = { ["fluid/mineral-sludge"] = {1}}
+    },
+    {
+      id = 3,
+      type = "line",
+      line_id = 3,
+      constraints = { ["fluid/water-mineralized"] = {2} }
+    },
+  }
+}
+
+out.geode_loop.red_sludge = {
+  id = 7,
+  steps = {
+    {
+      id = 1,
+      type = "fixed",
+      flow_set = { ["fluid/mineral-sludge"] = -100 },
+    },
+    {
+      id = 2,
+      type = "line",
+      line_id = 1,
+      constraints = { ["fluid/mineral-sludge"] = {1}}
+    },
+    {
+      id = 3,
+      type = "line",
+      line_id = 4,
+      constraints = { ["fluid/water-mineralized"] = {2} }
+    },
+  }
+}
+
+out.geode_loop.blue_slurry = {
+  id = 8,
+  steps = {
+    {
+      id = 1,
+      type = "fixed",
+      flow_set = { ["fluid/mineral-sludge"] = -100 },
+    },
+    {
+      id = 2,
+      type = "line",
+      line_id = 5,
+      constraints = { ["fluid/mineral-sludge"] = {1}}
+    },
+    {
+      id = 3,
+      recipe = "geode-blue-liquify",
+      constraints = { ["fluid/crystal-slurry"] = {2}}
+    }
+  }
+}
+
+out.geode_loop.cyan_slurry = {
+  id = 9,
+  steps = {
+    {
+      id = 1,
+      type = "fixed",
+      flow_set = { ["fluid/mineral-sludge"] = -100 },
+    },
+    {
+      id = 2,
+      type = "line",
+      line_id = 6,
+      constraints = { ["fluid/mineral-sludge"] = {1}}
+    },
+    {
+      id = 3,
+      recipe = "geode-cyan-liquify",
+      constraints = { ["fluid/crystal-slurry"] = {2}}
+    }
+  }
+}
+
+out.geode_loop.red_slurry = {
+  id = 10,
+  steps = {
+    {
+      id = 1,
+      type = "fixed",
+      flow_set = { ["fluid/mineral-sludge"] = -100 },
+    },
+    {
+      id = 2,
+      type = "line",
+      line_id = 7,
+      constraints = { ["fluid/mineral-sludge"] = {1}}
+    },
+    {
+      id = 3,
+      recipe = "geode-red-liquify",
+      constraints = { ["fluid/crystal-slurry"] = {2}}
+    }
+  }
+}
+
+out.geode_loop.overall = {
+  id = 11,
+  steps = {
+    {
+      id = 1,
+      type = "fixed",
+      flow_set = { ["fluid/water-heavy-mud"] = 100 },
+    },
+    {
+      id = 2,
+      recipe = "solid-geodes",
+      constraints = { ["fluid/water-heavy-mud"] = { 1 }},
+    },
+    {
+      id = 3,
+      type = "line",
+      line_id = 8,
+      constraints = { ["item/geode-blue"] = {2}},
+    },
+    {
+      id = 4,
+      type = "line",
+      line_id = 9,
+      constraints = { ["item/geode-cyan"] = {2}},
+    },
+    {
+      id = 5,
+      type = "line",
+      line_id = 10,
+      constraints = { ["item/geode-red"] = {2}},
+    },
+  },
+}
+
+out.geode_loop_supply_driven = {
+  steps = {
+    {
+      id = 1,
+      type = "fixed",
+      flow_set = { ["fluid/water-heavy-mud"] = 100 },
+    },
+    {
+      id = 2,
+      recipe = "solid-geodes",
+      constraints = { ["fluid/water-heavy-mud"] = { 1 }},
+    },
+    {
+      id = 3,
+      recipe = "geode-blue-liquify",
+      constraints = { ["item/geode-blue"] = { 2 }},
+    },
+    {
+      id = 4,
+      recipe = "geode-cyan-liquify",
+      constraints = { ["item/geode-cyan"] = { 2 }},
+    },
+    {
+      id = 5,
+      recipe = "geode-red-liquify",
+      constraints = { ["item/geode-red"] = { 2 }},
+    },
+    {
+      id = 6,
+      recipe = "crystal-slurry-filtering-conversion-1",
+      constraints = { ["fluid/crystal-slurry"] = { 3, 4, 5 }},
+    },
+    {
+      id = 7,
+      recipe = "yellow-waste-water-purification",
+      constraints = { ["fluid/water-yellow-waste"] = { 6 }},
+    },
+  },
+}
+
 return out

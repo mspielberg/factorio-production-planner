@@ -40,7 +40,23 @@ local function memoize(f)
   end
 end
 
+local function sort_by_key(list, extractor)
+  local out = {}
+  -- decorate
+  for k,v in ipairs(list) do
+    out[#out+1] = {extractor(v), v}
+  end
+  -- sort
+  table.sort(out, function(a, b) return a[1] < b[1] end)
+  -- undecorate
+  for k,v in ipairs(out) do
+    out[k] = v[2]
+  end
+  return out
+end
+
 return {
   find = find,
   memoize = memoize,
+  sort_by_key = sort_by_key,
 }
