@@ -12,41 +12,44 @@ local function new(costs, coefficients, constants)
     obj   = constants[n] + coefficients[n][1] * nb[1] + coefficients[n][2] * nb[2] + ...
   --]]
   local self = {
-    basic_vars = {},    -- row i of coefficients and constants matches to x_basic_vars[i]
-    nonbasic_vars = {}, -- column i of coefficients matches to x_nonbasic_vars[i]
-    constants = {},
-    coefficients = {},
+    basic_vars          = {}, -- row i of coefficients and constants contains var i
+    basic_vars_index    = {}, -- var i is found in row basic_vars_index[i]
+    nonbasic_vars       = {}, -- column i of coefficients contains var i
+    nonbasic_vars_index = {}, -- var i is found in column nonbasic_vars_index[i]
+    constants           = {},
+    coefficients        = {},
   }
 
   local nconstraints = #coefficients
   local nvars = #coefficients[1]
-  for i = 2, nconstraints do
-    assert(#coefficients[i] == nvars)
-  end
 
-  for i=1, nconstraints+1 do
+  for i = 1, nconstraints do
     self.basic_vars[i] = nvars + i
-    self.coefficients[i] = {}
+    self.basic_vars_index[nvars + i] = i
   end
-  self.basic_vars[nconstraints+1] = nil
-
-  for i=1,nvars do
+  for i = 1, nvars do
     self.nonbasic_vars[i] = i
+    self.nonbasic_vars_index[i] = i
   end
 
-  for i, cost_coeff in ipairs(costs) do
-    self.coefficients[#self.coefficients][i] = Rational(cost_coeff)
-  end
   for row_index, row in ipairs(coefficients) do
+    assert(#row == nvars)
     self.coefficients[row_index] = {}
     for i, coeff in ipairs(row) do
       self.coefficients[row_index][i] = Rational(-coeff)
     end
   end
+
   for i, constant in ipairs(constants) do
     self.constants[i] = Rational(constant)
   end
-  self.constants[#self.constants+1] = Rational(0)
+
+  local objective_row = {}
+  for i, cost_coeff in ipairs(costs) do
+    objective_row[i] = Rational(cost_coeff)
+  end
+  self.coefficients[nconstraints+1] = objective_row
+  self.constants[nconstraints+1] = Rational(0)
 
   return self
 end
@@ -93,17 +96,25 @@ local function select_entering_variable_bland(self)
   return current_column_index
 end
 
+local zero = Rational(0)
 local function select_exiting_variable(self, entering_column_index)
   local most_pessimistic = math.huge
   local exiting_row_index
   local exiting_variable_index
+
+  local function is_improvement_on(candidate, candidate_index)
+    return candidate >= zero and
+    (most_pessimistic == nil or
+      candidate < most_pessimistic or
+      candidate == most_pessimistic and candidate_index < exiting_variable_index)
+  end
+
   for i=1, #self.coefficients-1 do
-    if self.coefficients[i][entering_column_index] ~= 0 then
-      local can_increase_by = self.constants[i] / -self.coefficients[i][entering_column_index]
+    local coeff = self.coefficients[i][entering_column_index]
+    if coeff < Rational(0) then
+      local can_increase_by = self.constants[i] / -coeff
       local candidate_variable_index = self.basic_vars[i]
-      if can_increase_by > 0 and
-      (can_increase_by < most_pessimistic or
-        can_increase_by == most_pessimistic and candidate_variable_index < exiting_variable_index) then
+      if is_improvement_on(can_increase_by, candidate_variable_index) then
         exiting_row_index = i
         most_pessimistic = can_increase_by
         exiting_variable_index = candidate_variable_index
@@ -111,6 +122,28 @@ local function select_exiting_variable(self, entering_column_index)
     end
   end
   return exiting_row_index
+end
+
+local function invert_table(t)
+  local out = {}
+  for k,v in pairs(t) do
+    out[v] = k
+  end
+  return out
+end
+
+local function swap_variables(self, entering_var_index, exiting_var_index)
+  local exiting_row_index = self.basic_vars_index[exiting_var_index]
+  local entering_column_index = self.nonbasic_vars_index[entering_var_index]
+
+  self.basic_vars_index[entering_var_index] = exiting_row_index
+  self.basic_vars_index[exiting_var_index] = nil
+
+  self.nonbasic_vars_index[entering_var_index] = nil
+  self.nonbasic_vars_index[exiting_var_index] = entering_column_index
+
+  self.basic_vars[exiting_row_index], self.nonbasic_vars[entering_column_index] =
+    self.nonbasic_vars[entering_column_index], self.basic_vars[exiting_row_index]
 end
 
 local function pivot(self, entering_column_index, exiting_row_index)
@@ -123,26 +156,32 @@ local function pivot(self, entering_column_index, exiting_row_index)
   self.coefficients[exiting_row_index][entering_column_index] = 1 / entering_coeff
 
   -- substitute in
-  for row_index = 1, #self.coefficients do
+  for row_index, row in ipairs(self.coefficients)do
     if row_index ~= exiting_row_index then
-      local scalar = self.coefficients[row_index][entering_column_index]
+      local scalar = row[entering_column_index]
       self.constants[row_index] = self.constants[row_index] +
         self.constants[exiting_row_index] * scalar
       for col_index = 1, #self.nonbasic_vars do
         if col_index == entering_column_index then
-          self.coefficients[row_index][col_index] =
+          row[col_index] =
             self.coefficients[exiting_row_index][entering_column_index] * scalar
         else
-          self.coefficients[row_index][col_index] = self.coefficients[row_index][col_index] +
+          row[col_index] = row[col_index] +
             self.coefficients[exiting_row_index][col_index] * scalar
         end
       end
     end
   end
 
+  local old_nonbasic_vars = {}
+  for i = 1, #self.nonbasic_vars do
+    old_nonbasic_vars[i] = self.nonbasic_vars[i]
+  end
+
   -- rename variables
-  self.basic_vars[exiting_row_index], self.nonbasic_vars[entering_column_index] =
-    self.nonbasic_vars[entering_column_index], self.basic_vars[exiting_row_index]
+  local entering_var_index = self.nonbasic_vars[entering_column_index]
+  local exiting_var_index = self.basic_vars[exiting_row_index]
+  swap_variables(self, entering_var_index, exiting_var_index)
 end
 
 local function extract_results(self)
@@ -168,39 +207,86 @@ local function find_min(t)
   return index
 end
 
+local function regenerate_objective(self, original_costs)
+  local new_objective_constant = Rational(0)
+  local new_objective_coefficients = {}
+  for original_var_index, original_coefficient in ipairs(original_costs) do
+    local row_index = self.basic_vars_index[original_var_index]
+    if row_index then
+      -- now basic, need to substitute
+      new_objective_constant = new_objective_constant + self.constants[row_index] * original_coefficient
+      for col_index, coeff in ipairs(self.coefficients[row_index]) do
+        new_objective_coefficients[col_index] = (new_objective_coefficients[col_index] or Rational(0)) +
+          coeff * original_coefficient
+      end
+    else
+      -- still nonbasic, copy over
+      local new_col_index = self.nonbasic_vars_index[original_var_index]
+      new_objective_coefficients[new_col_index] = original_coefficient
+    end
+  end
+
+  self.constants[#self.constants] = new_objective_constant
+  self.coefficients[#self.coefficients] = new_objective_coefficients
+end
+
 local solve
 local function phase1(self)
   if is_feasible(self) then return end
 
+  -- save original objective function based on nonbasic vars nvars+1, nvars+2, ...
   local original_costs = self.coefficients[#self.coefficients]
   local nvars = #self.nonbasic_vars
 
-  -- augment with x0
-  self.nonbasic_vars[nvars+1] = 0
-  for i=1,#self.coefficients do
-    self.coefficients[i][nvars+1] = Rational(1)
-  end
-
-  -- adjust objective function
+  -- setup temporary objective function
   local temp_objective = {}
   for i=1,nvars do temp_objective[i] = Rational(0) end
   temp_objective[nvars+1] = Rational(-1)
   self.coefficients[#self.coefficients] = temp_objective
 
+  -- augment with x0
+  self.nonbasic_vars[nvars+1] = 0
+  self.nonbasic_vars_index[0] = nvars+1
+  for i=1,#self.coefficients-1 do
+    self.coefficients[i][nvars+1] = Rational(1)
+  end
+
   -- special pivot
   pivot(self, nvars+1, find_min(self.constants))
   assert(is_feasible(self))
   solve(self)
+
+  if self.basic_vars_index[0] then
+    error("infeasible")
+  end
+
+  -- strip x0
+  local col_index = self.nonbasic_vars_index[0]
+  for _, row in pairs(self.coefficients) do
+    table.remove(row, col_index)
+  end
+  for i = col_index, #self.nonbasic_vars do
+    self.nonbasic_vars[i] = self.nonbasic_vars[i+1]
+  end
+  self.nonbasic_vars_index = invert_table(self.nonbasic_vars)
+
+  regenerate_objective(self, original_costs)
 end
 
-solve = function(self)
+solve = function(self, max_iterations)
+  max_iterations = max_iterations or 1000
+
   phase1(self)
-  local entering_column_index = select_entering_variable_anstee(self)
+
+  local iterations = 0
+  local entering_column_index = select_entering_variable_bland(self)
   while entering_column_index do
     local exiting_row_index = select_exiting_variable(self, entering_column_index)
     if not exiting_row_index then error("unbounded") end
     pivot(self, entering_column_index, exiting_row_index)
-    entering_column_index = select_entering_variable_anstee(self)
+    iterations = iterations + 1
+    if iterations >= max_iterations then error("too many iterations") end
+    entering_column_index = select_entering_variable_bland(self)
   end
   return extract_results(self)
 end

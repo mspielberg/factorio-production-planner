@@ -59,6 +59,7 @@ function meta.__call(self, num, denom)
     return setmetatable(simplify{num, denom}, meta)
   end
   if type(num) == "table" and denom == nil then
+    if getmetatable(num) == meta then return num end
     local out = {}
     for k,v in pairs(num) do
       out[k] = Rational(v)
