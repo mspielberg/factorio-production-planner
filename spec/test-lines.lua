@@ -1,5 +1,29 @@
 local out = {}
 
+out.green_circuits = {
+  steps = {
+    {
+      id = 1,
+      type = "fixed",
+      flow_set = { ["item/electronic-circuit"] = -5 },
+    },
+    {
+      id = 2,
+      recipe = "electronic-circuit",
+      constraints = {
+        ["item/electronic-circuit"] = { 1 },
+      }
+    },
+    {
+      id = 3,
+      recipe = "copper-cable",
+      constraints = {
+        ["item/copper-cable"] = { 2 },
+      }
+    },
+  }
+}
+
 out.petro_gas_line = {
   id = 1,
   steps = {

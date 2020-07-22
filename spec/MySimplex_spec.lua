@@ -57,4 +57,17 @@ describe("MySimplex should", function()
     assert.are.same(Rational(13), objective)
     assert.are.same(Rational{5,4,0,0,0,0}, solution)
   end)
+
+  it("presolves infeasible starting states", function()
+    local s = MySimplex.new(
+      {1,-1,1},
+      {
+        {2,-1,2},
+        {2,-3,1},
+        {-1,1,-2},
+      },
+      {4,-5,-1}
+    )
+    MySimplex.solve(s)
+  end)
 end)

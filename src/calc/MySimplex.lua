@@ -52,8 +52,9 @@ local function new(costs, coefficients, constants)
 end
 
 local function is_feasible(self)
-  for _, value in pairs(self.constants) do
-    if value < 0 then
+  local t = self.constants
+  for i = 1,#t - 1 do
+    if t[i] < 0 then
       return false
     end
   end
@@ -100,8 +101,9 @@ local function select_exiting_variable(self, entering_column_index)
     if self.coefficients[i][entering_column_index] ~= 0 then
       local can_increase_by = self.constants[i] / -self.coefficients[i][entering_column_index]
       local candidate_variable_index = self.basic_vars[i]
-      if can_increase_by < most_pessimistic
-      or can_increase_by == most_pessimistic and candidate_variable_index < exiting_variable_index then
+      if can_increase_by > 0 and
+      (can_increase_by < most_pessimistic or
+        can_increase_by == most_pessimistic and candidate_variable_index < exiting_variable_index) then
         exiting_row_index = i
         most_pessimistic = can_increase_by
         exiting_variable_index = candidate_variable_index
@@ -154,7 +156,45 @@ local function extract_results(self)
   return out, self.constants[#self.constants]
 end
 
-local function solve(self)
+local function find_min(t)
+  local min = math.huge
+  local index
+  for i=1,#t do
+    if t[i] < min then
+      min = t[i]
+      index = i
+    end
+  end
+  return index
+end
+
+local solve
+local function phase1(self)
+  if is_feasible(self) then return end
+
+  local original_costs = self.coefficients[#self.coefficients]
+  local nvars = #self.nonbasic_vars
+
+  -- augment with x0
+  self.nonbasic_vars[nvars+1] = 0
+  for i=1,#self.coefficients do
+    self.coefficients[i][nvars+1] = Rational(1)
+  end
+
+  -- adjust objective function
+  local temp_objective = {}
+  for i=1,nvars do temp_objective[i] = Rational(0) end
+  temp_objective[nvars+1] = Rational(-1)
+  self.coefficients[#self.coefficients] = temp_objective
+
+  -- special pivot
+  pivot(self, nvars+1, find_min(self.constants))
+  assert(is_feasible(self))
+  solve(self)
+end
+
+solve = function(self)
+  phase1(self)
   local entering_column_index = select_entering_variable_anstee(self)
   while entering_column_index do
     local exiting_row_index = select_exiting_variable(self, entering_column_index)

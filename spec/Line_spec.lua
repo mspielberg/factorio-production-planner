@@ -51,29 +51,7 @@ describe("A Line should", function()
   end)
 
   it("be deserializable", function()
-    local line = Line.restore{
-      steps = {
-        {
-          id = 1,
-          type = "fixed",
-          flow_set = { ["item/electronic-circuit"] = -5 },
-        },
-        {
-          id = 2,
-          recipe = "electronic-circuit",
-          constraints = {
-            ["item/electronic-circuit"] = { 1 },
-          }
-        },
-        {
-          id = 3,
-          recipe = "copper-cable",
-          constraints = {
-            ["item/copper-cable"] = { 2 },
-          }
-        },
-      }
-    }
+    local line = Line.restore(test_lines.green_circuits)
     assert.are.same(
       line:get_scaled_flow_set(),
       {
