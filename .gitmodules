@@ -1,0 +1,3 @@
+[submodule "lualib/luasimplex"]
+	path = lualib/luasimplex
+	url = ../luasimplex

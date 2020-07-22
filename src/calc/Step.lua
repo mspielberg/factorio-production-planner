@@ -2,7 +2,7 @@ local ComponentFlowSet = require "src.calc.ComponentFlowSet"
 local serpent = require "serpent"
 local util = require "src.util"
 
--- @treturn {[number]=ComponentFlowSet,...}
+-- @return {[number]=ComponentFlowSet,...}
 local function get_constraining_step_flow_sets(self, line)
   local out = {}
   for _, step_ids in pairs(self.constraints) do
@@ -15,7 +15,7 @@ local function get_constraining_step_flow_sets(self, line)
   return out
 end
 
--- @treturn ComponentFlowSet
+-- @return ComponentFlowSet
 local function get_constraint_flow_set(self, line)
   local out = ComponentFlowSet.new()
   local flow_sets = get_constraining_step_flow_sets(self, line)
@@ -53,12 +53,13 @@ function Step:can_be_constrained_by(other, component)
   return my_count and other_count and my_count * other_count < 0 or false
 end
 
--- @param line Line
--- @return ComponentFlowSet
+---@return ComponentFlowSet
 function Step:get_base_flow_set()
   error("Step:get_base_flow_set should never be called")
 end
 
+---@param line Line
+---@return ComponentFlowSet
 function Step:get_scaled_flow_set(line)
   return self:get_base_flow_set():scale(self:get_rate(line))
 end

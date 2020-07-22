@@ -112,6 +112,23 @@ out.seablock_mineral_sludge_line = {
 
 out.geode_loop = {}
 
+out.geode_loop.full = {
+  id = 1,
+  steps = {
+    { id = 1, recipe = "solid-geodes", },
+    { id = 8, recipe = "geode-blue-liquify", },
+    { id = 9, recipe = "geode-cyan-liquify", },
+    { id = 10, recipe = "geode-red-liquify", },
+    { id = 2, recipe = "crystal-slurry-filtering-conversion-1", },
+    { id = 5, recipe = "geode-blue-processing", },
+    { id = 6, recipe = "geode-cyan-processing", },
+    { id = 7, recipe = "geode-red-processing", },
+    { id = 4, recipe = "water-mineralized", },
+    { id = 11, recipe = "crystal-dust-liquify", },
+    { id = 3, recipe = "yellow-waste-water-purification", },
+  }
+}
+
 out.geode_loop.sludge = {
   id = 1,
   steps = {

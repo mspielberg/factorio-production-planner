@@ -2,11 +2,13 @@ local ComponentFlowSet = require "src.calc.ComponentFlowSet"
 local Step = require "src.calc.Step"
 
 ---@class Line
+---@field public steps Step[]
 local Line = {}
 
 ---@return ComponentFlowSet
 function Line:get_scaled_flow_set()
   local flow_sets = {}
+  ---@type Step
   for _, step in pairs(self.steps) do
     if step.type ~= "fixed" then
       flow_sets[#flow_sets+1] = step:get_scaled_flow_set(self)
