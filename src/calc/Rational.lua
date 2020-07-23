@@ -1,3 +1,4 @@
+if not serpent then serpent = require "serpent" end
 local Rational = {}
 
 local function gcd(a, b)
@@ -6,7 +7,13 @@ local function gcd(a, b)
 end
 
 local function simplify(self)
+  if self[2] == nil then self[2] = 1 end
+
+  assert(type(self[1]) == "number")
+  assert(type(self[2]) == "number")
+
   local div = gcd(self[1], self[2] or 1)
+  assert(type(div) == "number" and div < math.huge and div > -math.huge and div == div)
   return { self[1] / div, (self[2] or 1) / div }
 end
 
@@ -71,8 +78,13 @@ end
 function meta.__tostring(self)
   if self[2] == 1 then
     return tostring(math.floor(self[1]))
+  elseif self[1] == math.floor(self[1]) and self[2] == math.floor(self[2]) and 
+  self[1] > -1000 and self[1] < 1000 and self[2] < 100 then
+    print(self[1])
+    print(self[2])
+    return string.format("%d/%d", self[1], self[2])
   end
-  return string.format("%d/%d", self[1], self[2])
+  return tostring(self[1]/self[2])
 end
 
 return setmetatable(Rational, meta)

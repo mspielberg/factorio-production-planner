@@ -41,7 +41,11 @@ local function model_from_line(line)
   local components = component_rates(line)
   local coefficients = {}
   local constants = {}
-  local component_list = {}
+  local descriptions = {}
+
+  for i=1,#line.steps do
+    descriptions[i] = line.steps[i].recipe
+  end
 
   local ncomponents = table_size(components)
   local nvars = ncomponents + #line.steps - table_size(line.constraints)
@@ -56,7 +60,6 @@ local function model_from_line(line)
 
   local slack_index = #line.steps
   for component, info in pairs(components) do
-    component_list[#component_list+1] = component
     local row = {}
     for i = 1, #line.steps do
       row[i] = -(info.rates[i] or 0)
@@ -68,22 +71,29 @@ local function model_from_line(line)
       slack_index = slack_index + 1
       row[slack_index] = -1
       if has_pos_and_neg(info.rates) then
-        costs[slack_index] = -100
+        costs[slack_index] = -1e3
       end
+      descriptions[slack_index] = "input_"..component
     end
     coefficients[#coefficients+1] = row
 
     constants[#constants+1] = -(line.constraints[component] or 0)
   end
 
+  component_index = slack_index
+  for component in pairs(components) do
+    component_index = component_index + 1
+    descriptions[component_index] = "excess_"..component
+  end
+
   local out = MySimplex.new(costs, coefficients, constants)
-  out.components = component_list
+  out.descriptions = descriptions
   return out
 end
 
 local function solve(line, trace)
   local model = model_from_line(line)
-  return MySimplex.solve(model.simplex, nil, trace)
+  return MySimplex.solve(model, nil, trace)
 end
 
 return {

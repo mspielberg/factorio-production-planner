@@ -15,7 +15,7 @@ local function round(n, p)
 end
 
 local function dump_model(model)
-  local components = model.components
+  local components = model.descriptions
   local rows = {}
   for i, row in ipairs(model.coefficients) do
     local row_info = {("%6s"):format(tostring(model.constants[i]))}
@@ -37,37 +37,21 @@ describe("The Solver should", function()
     local line = Line.restore(test_lines.green_circuits)
     table.remove(line.steps, 1)
     line.constraints = { ["item/electronic-circuit"] = 5 }
+    local result = Solver.solve(line)
+    assert.are.same(5, result[1])
+    assert.are.same(7.5, result[2])
+  end)
+
+  it("handle the Seablock geode loop", function()
+    local line = Line.restore(test_lines.geode_loop.full)
+    line.constraints = {["fluid/mineral-sludge"] = 100}
     local model = Solver.model_from_line(line)
     print(dump_model(model))
     model.trace = true
     local result = MySimplex.solve(model)
     print(serpent.line(result))
-    assert.are.same(Rational(5), result[1])
-    assert.are.same(Rational(7.5), result[2])
-  end)
-
-  do return end
-
-  it("handle the Seablock geode loop", function()
-    local line = Line.restore(test_lines.geode_loop.full)
-    line.constraints = {["fluid/mineral-sludge"] = 100}
-    local result, model = Solver.solve(line)
-    print(dump_model(model))
-    for i=1,#line.steps do
-      print(
-        line.steps[i].recipe,
-        round(result[i], 10000))
-    end
-    local components = model.components
-    for component, info in pairs(components) do
-      if info.input_flow then
-        print(serpent.block(info))
-        print(
-          component,
-          round(result[info.input_flow], 10000),
-          round(result[info.output_flow], 10000)
-        )
-      end
+    for i=1,#model.descriptions do
+      print(model.descriptions[i], result[i])
     end
   end)
 end)

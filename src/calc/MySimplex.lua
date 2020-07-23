@@ -1,6 +1,7 @@
 -- see https://www.matem.unam.mx/~omar/math340/simplex-intro.html
-local Rational = require "src.calc.Rational"
+local Rational = require "calc.Rational"
 if not serpent then serpent = require "serpent" end
+local Number = function(x) return x end
 
 local function dump_model(model)
   local rows = {}
@@ -54,20 +55,20 @@ local function new(costs, coefficients, constants)
     assert(#row == nvars)
     self.coefficients[row_index] = {}
     for i, coeff in ipairs(row) do
-      self.coefficients[row_index][i] = Rational(-coeff)
+      self.coefficients[row_index][i] = Number(-coeff)
     end
   end
 
   for i, constant in ipairs(constants) do
-    self.constants[i] = Rational(constant)
+    self.constants[i] = Number(constant)
   end
 
   local objective_row = {}
   for i, cost_coeff in ipairs(costs) do
-    objective_row[i] = Rational(cost_coeff)
+    objective_row[i] = Number(cost_coeff)
   end
   self.coefficients[nconstraints+1] = objective_row
-  self.constants[nconstraints+1] = Rational(0)
+  self.constants[nconstraints+1] = Number(0)
 
   return self
 end
@@ -114,7 +115,7 @@ local function select_entering_variable_bland(self)
   return current_column_index
 end
 
-local zero = Rational(0)
+local zero = 0
 local function select_exiting_variable(self, entering_column_index)
   local most_pessimistic = math.huge
   local exiting_row_index
@@ -129,7 +130,7 @@ local function select_exiting_variable(self, entering_column_index)
 
   for i=1, #self.coefficients-1 do
     local coeff = self.coefficients[i][entering_column_index]
-    if coeff < Rational(0) then
+    if coeff < 0 then
       local can_increase_by = self.constants[i] / -coeff
       local candidate_variable_index = self.basic_vars[i]
       if is_improvement_on(can_increase_by, candidate_variable_index) then
@@ -203,12 +204,15 @@ local function pivot(self, entering_column_index, exiting_row_index)
 end
 
 local function extract_results(self)
+  local function round(x, n)
+    return math.floor(x*10^n+0.5)/10^n
+  end
   local out = {}
   for i=1, #self.basic_vars do
-    out[self.basic_vars[i]] = self.constants[i]
+    out[self.basic_vars[i]] = round(self.constants[i], 3)
   end
   for i=1, #self.nonbasic_vars do
-    out[self.nonbasic_vars[i]] = Rational(0)
+    out[self.nonbasic_vars[i]] = 0
   end
   return out, self.constants[#self.constants]
 end
@@ -226,7 +230,7 @@ local function find_min(t)
 end
 
 local function regenerate_objective(self, original_costs)
-  local new_objective_constant = Rational(0)
+  local new_objective_constant = Number(0)
   local new_objective_coefficients = {}
   for original_var_index, original_coefficient in ipairs(original_costs) do
     local row_index = self.basic_vars_index[original_var_index]
@@ -234,14 +238,14 @@ local function regenerate_objective(self, original_costs)
       -- now basic, need to substitute
       new_objective_constant = new_objective_constant + self.constants[row_index] * original_coefficient
       for col_index, coeff in ipairs(self.coefficients[row_index]) do
-        new_objective_coefficients[col_index] = (new_objective_coefficients[col_index] or Rational(0)) +
+        new_objective_coefficients[col_index] = (new_objective_coefficients[col_index] or Number(0)) +
           coeff * original_coefficient
       end
     else
       -- still nonbasic, copy over
       local new_col_index = self.nonbasic_vars_index[original_var_index]
       new_objective_coefficients[new_col_index] =
-        new_objective_coefficients[new_col_index] + original_coefficient
+        (new_objective_coefficients[new_col_index] or Number(0)) + original_coefficient
     end
   end
 
@@ -259,15 +263,15 @@ local function phase1(self)
 
   -- setup temporary objective function
   local temp_objective = {}
-  for i=1,nvars do temp_objective[i] = Rational(0) end
-  temp_objective[nvars+1] = Rational(-1)
+  for i=1,nvars do temp_objective[i] = Number(0) end
+  temp_objective[nvars+1] = Number(-1)
   self.coefficients[#self.coefficients] = temp_objective
 
   -- augment with x0
   self.nonbasic_vars[nvars+1] = 0
   self.nonbasic_vars_index[0] = nvars+1
   for i=1,#self.coefficients-1 do
-    self.coefficients[i][nvars+1] = Rational(1)
+    self.coefficients[i][nvars+1] = Number(1)
   end
 
   if self.trace then
@@ -288,7 +292,7 @@ local function phase1(self)
   assert(is_feasible(self))
   solve(self)
 
-  if self.constants[#self.constants] < Rational(0) then
+  if self.constants[#self.constants] < 0 then
     error("infeasible")
   end
 
@@ -316,7 +320,7 @@ solve = function(self, max_iterations)
   phase1(self)
 
   local iterations = 0
-  local entering_column_index = select_entering_variable_bland(self)
+  local entering_column_index = select_entering_variable_anstee(self)
   while entering_column_index do
     local exiting_row_index = select_exiting_variable(self, entering_column_index)
     iterations = iterations + 1
@@ -332,7 +336,7 @@ solve = function(self, max_iterations)
       print(dump_model(self))
     end
     if iterations >= max_iterations then error("too many iterations") end
-    entering_column_index = select_entering_variable_bland(self)
+    entering_column_index = select_entering_variable_anstee(self)
   end
   return extract_results(self)
 end
