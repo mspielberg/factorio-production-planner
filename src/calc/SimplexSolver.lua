@@ -28,36 +28,62 @@ local function has_pos_and_neg(t)
   return false
 end
 
+local function table_size(t)
+  local i = 0
+  for _ in pairs(t) do
+    i = i + 1
+  end
+  return i
+end
+
 local function model_from_line(line)
   local nsteps = #line.steps
   local components = component_rates(line)
   local coefficients = {}
   local constants = {}
-  local out = { components = {} }
+  local component_list = {}
 
+  local ncomponents = table_size(components)
+  local nvars = ncomponents + #line.steps - table_size(line.constraints)
+
+  local costs = {}
+  for i = 1, #line.steps do
+    costs[i] = -1
+  end
+  for i=#line.steps, nvars do
+    costs[i] = -10
+  end
+
+  local slack_index = #line.steps
   for component, info in pairs(components) do
-    out.components[#out.components+1] = component
+    component_list[#component_list+1] = component
     local row = {}
     for i = 1, #line.steps do
       row[i] = -(info.rates[i] or 0)
+    end
+    for i = #line.steps + 1, nvars do
+      row[i] = 0
+    end
+    if not line.constraints[component] then
+      slack_index = slack_index + 1
+      row[slack_index] = -1
+      if has_pos_and_neg(info.rates) then
+        costs[slack_index] = -100
+      end
     end
     coefficients[#coefficients+1] = row
 
     constants[#constants+1] = -(line.constraints[component] or 0)
   end
 
-  local costs = {}
-  for i = 1, nsteps do
-    costs[i] = -1
-  end
-
-  out.simplex = MySimplex.new(costs, coefficients, constants)
+  local out = MySimplex.new(costs, coefficients, constants)
+  out.components = component_list
   return out
 end
 
-local function solve(line)
+local function solve(line, trace)
   local model = model_from_line(line)
-  return MySimplex.solve(model.simplex)
+  return MySimplex.solve(model.simplex, nil, trace)
 end
 
 return {

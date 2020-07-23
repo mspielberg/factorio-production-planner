@@ -1,5 +1,23 @@
 -- see https://www.matem.unam.mx/~omar/math340/simplex-intro.html
 local Rational = require "src.calc.Rational"
+if not serpent then serpent = require "serpent" end
+
+local function dump_model(model)
+  local rows = {}
+  for i, row in ipairs(model.coefficients) do
+    local row_info = {("%6s"):format(tostring(model.constants[i]))}
+    for j, term in ipairs(row) do
+      row_info[#row_info+1] = ("%8s x%-2d"):format(tostring(term), model.nonbasic_vars[j])
+    end
+    local terms = table.concat(row_info, " + ")
+    rows[#rows+1] = ("%4s = %-90s"):format(
+      tostring(model.basic_vars[i] and "x"..model.basic_vars[i] or "Obj"),
+      terms
+    )
+  end
+  return table.concat(rows, "\n")
+end
+
 
 local function new(costs, coefficients, constants)
   --[[
@@ -222,7 +240,8 @@ local function regenerate_objective(self, original_costs)
     else
       -- still nonbasic, copy over
       local new_col_index = self.nonbasic_vars_index[original_var_index]
-      new_objective_coefficients[new_col_index] = original_coefficient
+      new_objective_coefficients[new_col_index] =
+        new_objective_coefficients[new_col_index] + original_coefficient
     end
   end
 
@@ -251,12 +270,25 @@ local function phase1(self)
     self.coefficients[i][nvars+1] = Rational(1)
   end
 
+  if self.trace then
+    print("\nAugmented:")
+    print(dump_model(self))
+  end
+
   -- special pivot
+  if self.trace then
+    local exiting = find_min(self.constants)
+    print(string.format("\npivot to feasibility: entering: x0, exiting: x%d",
+      self.basic_vars[exiting]))
+  end
   pivot(self, nvars+1, find_min(self.constants))
+  if self.trace then
+    print(dump_model(self))
+  end
   assert(is_feasible(self))
   solve(self)
 
-  if self.basic_vars_index[0] then
+  if self.constants[#self.constants] < Rational(0) then
     error("infeasible")
   end
 
@@ -271,6 +303,11 @@ local function phase1(self)
   self.nonbasic_vars_index = invert_table(self.nonbasic_vars)
 
   regenerate_objective(self, original_costs)
+
+  if self.trace then
+    print("\nAfter phase 1")
+    print(dump_model(self))
+  end
 end
 
 solve = function(self, max_iterations)
@@ -282,9 +319,18 @@ solve = function(self, max_iterations)
   local entering_column_index = select_entering_variable_bland(self)
   while entering_column_index do
     local exiting_row_index = select_exiting_variable(self, entering_column_index)
-    if not exiting_row_index then error("unbounded") end
-    pivot(self, entering_column_index, exiting_row_index)
     iterations = iterations + 1
+    if not exiting_row_index then error("unbounded") end
+    if self.trace then
+      print(string.format("iteration %d: entering: x%d, exiting: x%d",
+        iterations,
+        self.nonbasic_vars[entering_column_index],
+        self.basic_vars[exiting_row_index]))
+    end
+    pivot(self, entering_column_index, exiting_row_index)
+    if self.trace then
+      print(dump_model(self))
+    end
     if iterations >= max_iterations then error("too many iterations") end
     entering_column_index = select_entering_variable_bland(self)
   end

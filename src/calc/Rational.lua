@@ -68,4 +68,11 @@ function meta.__call(self, num, denom)
   end
 end
 
+function meta.__tostring(self)
+  if self[2] == 1 then
+    return tostring(math.floor(self[1]))
+  end
+  return string.format("%d/%d", self[1], self[2])
+end
+
 return setmetatable(Rational, meta)
