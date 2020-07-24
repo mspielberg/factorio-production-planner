@@ -4,16 +4,23 @@ local Rational = require "src.calc.Rational"
 ---@param line Line
 ---@return table<Component,table<number,number>>
 local function component_rates(line)
-  local out = {}
+  local rates = {}
   for i, step in pairs(line.steps) do
     local flow_set = step:get_base_flow_set()
     for component, rate in pairs(flow_set) do
-      if not out[component] then
-        out[component] = {rates = {}}
+      if not rates[component] then
+        rates[component] = {}
       end
-      out[component].rates[i] = rate
+      rates[component][i] = rate
     end
   end
+  -- sort by name
+
+  local out = {}
+  for k,v in pairs(rates) do
+    out[#out+1] = {k, v}
+  end
+  table.sort(out, function(a,b) return a[1] < b[1] end)
   return out
 end
 
@@ -43,28 +50,30 @@ local function model_from_line(line)
   local constants = {}
   local descriptions = {}
 
-  for i=1,#line.steps do
+  for i=1,nsteps do
     descriptions[i] = line.steps[i].recipe
   end
 
-  local ncomponents = table_size(components)
-  local nvars = ncomponents + #line.steps - table_size(line.constraints)
+  local ncomponents = #components
+  local nvars = ncomponents + nsteps - table_size(line.constraints)
 
   local costs = {}
-  for i = 1, #line.steps do
+  for i = 1, nsteps do
     costs[i] = -1
   end
   for i=#line.steps, nvars do
     costs[i] = -10
   end
 
-  local slack_index = #line.steps
-  for component, info in pairs(components) do
+  local slack_index = nsteps
+  for _, info in ipairs(components) do
+    local component = info[1]
+    local rates = info[2]
     local row = {}
-    for i = 1, #line.steps do
-      row[i] = -(info.rates[i] or 0)
+    for i = 1, nsteps do
+      row[i] = -(rates[i] or 0)
     end
-    for i = #line.steps + 1, nvars do
+    for i = nsteps + 1, nvars do
       row[i] = 0
     end
     if not line.constraints[component] then
@@ -80,7 +89,7 @@ local function model_from_line(line)
     constants[#constants+1] = -(line.constraints[component] or 0)
   end
 
-  component_index = slack_index
+  local component_index = slack_index
   for component in pairs(components) do
     component_index = component_index + 1
     descriptions[component_index] = "excess_"..component
