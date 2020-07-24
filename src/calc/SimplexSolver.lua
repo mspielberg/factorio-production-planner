@@ -61,8 +61,8 @@ local function model_from_line(line)
   for i = 1, nsteps do
     costs[i] = -1
   end
-  for i=#line.steps, nvars do
-    costs[i] = -10
+  for i=nsteps, nvars do
+    costs[i] = -100
   end
 
   local slack_index = nsteps
@@ -79,8 +79,8 @@ local function model_from_line(line)
     if not line.constraints[component] then
       slack_index = slack_index + 1
       row[slack_index] = -1
-      if has_pos_and_neg(info.rates) then
-        costs[slack_index] = -1e3
+      if has_pos_and_neg(rates) then
+        costs[slack_index] = -1e9
       end
       descriptions[slack_index] = "input_"..component
     end
