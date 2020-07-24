@@ -164,28 +164,26 @@ local function swap_variables(self, entering_var_index, exiting_var_index)
 end
 
 local function pivot(self, entering_column_index, exiting_row_index)
+  local constants = self.constants
+  local coefficients = self.coefficients
+
   -- solve for entering variable
-  local entering_coeff = self.coefficients[exiting_row_index][entering_column_index]
-  self.constants[exiting_row_index] = self.constants[exiting_row_index] / -entering_coeff
-  for i=1,#self.nonbasic_vars do
-    self.coefficients[exiting_row_index][i] = self.coefficients[exiting_row_index][i] / -entering_coeff
+  local exiting_row = coefficients[exiting_row_index]
+  local entering_coeff = exiting_row[entering_column_index]
+  constants[exiting_row_index] = constants[exiting_row_index] / -entering_coeff
+  exiting_row[entering_column_index] = -1
+  for i = 1, #self.nonbasic_vars do
+    exiting_row[i] = exiting_row[i] / -entering_coeff
   end
-  self.coefficients[exiting_row_index][entering_column_index] = 1 / entering_coeff
 
   -- substitute in
-  for row_index, row in ipairs(self.coefficients)do
+  for row_index, row in pairs(coefficients) do
     if row_index ~= exiting_row_index then
       local scalar = row[entering_column_index]
-      self.constants[row_index] = self.constants[row_index] +
-        self.constants[exiting_row_index] * scalar
+      constants[row_index] = constants[row_index] + constants[exiting_row_index] * scalar
+      row[entering_column_index] = 0
       for col_index = 1, #self.nonbasic_vars do
-        if col_index == entering_column_index then
-          row[col_index] =
-            self.coefficients[exiting_row_index][entering_column_index] * scalar
-        else
-          row[col_index] = row[col_index] +
-            self.coefficients[exiting_row_index][col_index] * scalar
-        end
+        row[col_index] = row[col_index] + exiting_row[col_index] * scalar
       end
     end
   end
