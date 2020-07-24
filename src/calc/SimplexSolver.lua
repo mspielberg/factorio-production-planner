@@ -93,7 +93,7 @@ end
 
 local function solve(line, trace)
   local model = model_from_line(line)
-  return MySimplex.solve(model, nil, trace)
+  return MySimplex.solve(model, nil, trace), model
 end
 
 return {
