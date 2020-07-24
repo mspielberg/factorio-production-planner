@@ -3,6 +3,8 @@ local Rational = require "calc.Rational"
 if not serpent then serpent = require "serpent" end
 local Number = function(x) return x end
 
+local TOL = 1e-6
+
 local function dump_model(model)
   local rows = {}
   for i, row in ipairs(model.coefficients) do
@@ -90,7 +92,7 @@ local function select_entering_variable_anstee(self)
   local current_coeff = 0
   for i, candidate_coeff in ipairs(z_row) do
     local var_index = self.nonbasic_vars[i]
-    if candidate_coeff > 0 and (
+    if candidate_coeff > TOL and (
     current_coeff < candidate_coeff or
     current_coeff == candidate_coeff and var_index < current_var_index) then
       current_column_index = i
@@ -107,7 +109,7 @@ local function select_entering_variable_bland(self)
   local current_var_index = math.huge
   for i, candidate_coeff in ipairs(z_row) do
     local var_index = self.nonbasic_vars[i]
-    if candidate_coeff > 0 and current_var_index > var_index then
+    if candidate_coeff > TOL and current_var_index > var_index then
       current_column_index = i
       current_var_index = var_index
     end
@@ -130,7 +132,7 @@ local function select_exiting_variable(self, entering_column_index)
 
   for i=1, #self.coefficients-1 do
     local coeff = self.coefficients[i][entering_column_index]
-    if coeff < 0 then
+    if coeff < -TOL then
       local can_increase_by = self.constants[i] / -coeff
       local candidate_variable_index = self.basic_vars[i]
       if is_improvement_on(can_increase_by, candidate_variable_index) then
@@ -292,7 +294,7 @@ local function phase1(self)
   assert(is_feasible(self))
   solve(self)
 
-  if self.constants[#self.constants] < 0 then
+  if self.constants[#self.constants] < -TOL then
     error("infeasible")
   end
 
