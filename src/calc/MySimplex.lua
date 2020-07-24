@@ -322,7 +322,7 @@ solve = function(self, max_iterations)
   phase1(self)
 
   local iterations = 0
-  local entering_column_index = select_entering_variable_anstee(self)
+  local entering_column_index = select_entering_variable_bland(self)
   while entering_column_index do
     local exiting_row_index = select_exiting_variable(self, entering_column_index)
     iterations = iterations + 1
@@ -338,7 +338,7 @@ solve = function(self, max_iterations)
       print(dump_model(self))
     end
     if iterations >= max_iterations then error("too many iterations") end
-    entering_column_index = select_entering_variable_anstee(self)
+    entering_column_index = select_entering_variable_bland(self)
   end
   return extract_results(self)
 end
