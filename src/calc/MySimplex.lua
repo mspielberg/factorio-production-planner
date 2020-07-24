@@ -1,8 +1,4 @@
 -- see https://www.matem.unam.mx/~omar/math340/simplex-intro.html
-local Rational = require "calc.Rational"
-if not serpent then serpent = require "serpent" end
-local Number = function(x) return x end
-
 local TOL = 1e-6
 
 local function dump_model(model)
@@ -57,20 +53,20 @@ local function new(costs, coefficients, constants)
     assert(#row == nvars)
     self.coefficients[row_index] = {}
     for i, coeff in ipairs(row) do
-      self.coefficients[row_index][i] = Number(-coeff)
+      self.coefficients[row_index][i] = -coeff
     end
   end
 
   for i, constant in ipairs(constants) do
-    self.constants[i] = Number(constant)
+    self.constants[i] = constant
   end
 
   local objective_row = {}
   for i, cost_coeff in ipairs(costs) do
-    objective_row[i] = Number(cost_coeff)
+    objective_row[i] = cost_coeff
   end
   self.coefficients[nconstraints+1] = objective_row
-  self.constants[nconstraints+1] = Number(0)
+  self.constants[nconstraints+1] = 0
 
   return self
 end
@@ -232,7 +228,7 @@ local function find_min(t)
 end
 
 local function regenerate_objective(self, original_costs)
-  local new_objective_constant = Number(0)
+  local new_objective_constant = 0
   local new_objective_coefficients = {}
   for original_var_index, original_coefficient in ipairs(original_costs) do
     local row_index = self.basic_vars_index[original_var_index]
@@ -240,14 +236,14 @@ local function regenerate_objective(self, original_costs)
       -- now basic, need to substitute
       new_objective_constant = new_objective_constant + self.constants[row_index] * original_coefficient
       for col_index, coeff in ipairs(self.coefficients[row_index]) do
-        new_objective_coefficients[col_index] = (new_objective_coefficients[col_index] or Number(0)) +
+        new_objective_coefficients[col_index] = (new_objective_coefficients[col_index] or 0) +
           coeff * original_coefficient
       end
     else
       -- still nonbasic, copy over
       local new_col_index = self.nonbasic_vars_index[original_var_index]
       new_objective_coefficients[new_col_index] =
-        (new_objective_coefficients[new_col_index] or Number(0)) + original_coefficient
+        (new_objective_coefficients[new_col_index] or 0) + original_coefficient
     end
   end
 
@@ -265,15 +261,15 @@ local function phase1(self)
 
   -- setup temporary objective function
   local temp_objective = {}
-  for i=1,nvars do temp_objective[i] = Number(0) end
-  temp_objective[nvars+1] = Number(-1)
+  for i=1,nvars do temp_objective[i] = 0 end
+  temp_objective[nvars+1] = -1
   self.coefficients[#self.coefficients] = temp_objective
 
   -- augment with x0
   self.nonbasic_vars[nvars+1] = 0
   self.nonbasic_vars_index[0] = nvars+1
   for i=1,#self.coefficients-1 do
-    self.coefficients[i][nvars+1] = Number(1)
+    self.coefficients[i][nvars+1] = 1
   end
 
   if self.trace then
