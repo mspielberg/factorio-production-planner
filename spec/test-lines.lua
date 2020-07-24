@@ -461,4 +461,18 @@ out.geode_loop_supply_driven = {
   },
 }
 
+out.py_slimed_iron = {
+  steps = {
+    { recipe = "hotair-iron-plate-1" },
+    { recipe = "molten-iron-06" },
+    { recipe = "unslimed-iron" },
+    { recipe = "unslimed-iron-2" },
+    { recipe = "classify-iron-ore-dust" },
+    { recipe = "iron-ore-dust" },
+    { recipe = "grade-2-crush" },
+    { recipe = "grade-3-iron-processing" },
+    { recipe = "grade-2-iron" },
+  }
+}
+
 return out

@@ -2,16 +2,14 @@ if os.getenv("LOCAL_LUA_DEBUGGER_VSCODE") == "1" then
   require "lldebugger".start()
 end
 if not serpent then serpent = require "serpent" end
-local Line = require "calc.Line"
-local MySimplex = require "calc.MySimplex"
-local Rational = require "calc.Rational"
-local RecipeStep = require "calc.RecipeStep"
-local Solver = require "calc.SimplexSolver"
-local StubAPIAdapter = require "spec.StubAPIAdapter"
+local Line = require "src.calc.Line"
+local _ = require "src.calc.RecipeStep"
+local Solver = require "src.calc.SimplexSolver"
+local _ = require "spec.StubAPIAdapter"
 local test_lines = require "spec.test-lines"
 
 local function round(n, p)
-  return math.floor(n*p+0.5) / p
+  return math.floor(n*10^p+0.5) / 10^p
 end
 
 local function dump_model(model)
@@ -45,13 +43,46 @@ describe("The Solver should", function()
   it("handle the Seablock geode loop", function()
     local line = Line.restore(test_lines.geode_loop.full)
     line.constraints = {["fluid/mineral-sludge"] = 100}
-    local model = Solver.model_from_line(line)
-    print(dump_model(model))
-    model.trace = true
-    local result = MySimplex.solve(model)
-    print(serpent.line(result))
-    for i=1,#model.descriptions do
-      print(model.descriptions[i], result[i])
+    local result, model = Solver.solve(line)
+    local expected = {
+      ["solid-geodes"] = 7.089,
+      ["geode-blue-liquify"] = 0.573,
+      ["geode-cyan-liquify"] = 0.851,
+      ["geode-red-liquify"] = 0,
+      ["crystal-slurry-filtering-conversion-1"] = 2.0,
+      ["geode-blue-processing"] = 3.883,
+      ["geode-cyan-processing"] = 0,
+      ["geode-red-processing"] = 5.317,
+      ["water-mineralized"] = 1.84,
+      ["crystal-dust-liquify"] = 0.92,
+      ["yellow-waste-water-purification"] = 0.8,
+    }
+    for i=1,#result do
+      if expected[model.descriptions[i]] then
+        assert.are.same(expected[model.descriptions[i]], round(result[i], 3))
+      end
+    end
+  end)
+
+  it("handle Py slimed iron smelting", function()
+    local line = Line.restore(test_lines.py_slimed_iron)
+    line.constraints = {["item/iron-plate"] = 15}
+    local result, model = Solver.solve(line)
+    local expected = {
+      ["hotair-iron-plate-1"] = 0.2,
+      ["molten-iron-06"] = 0.5,
+      ["unslimed-iron"] = 0.375,
+      ["unslimed-iron-2"] = 0.125,
+      ["classify-iron-ore-dust"] = 0.75,
+      ["iron-ore-dust"] = 2.25,
+      ["grade-2-crush"] = 1.125,
+      ["grade-3-iron-processing"] = 0.563,
+      ["grade-2-iron"] = 1.125,
+    }
+    for i=1,#result do
+      if expected[model.descriptions[i]] then
+        assert.are.same(expected[model.descriptions[i]], round(result[i], 3))
+      end
     end
   end)
 end)

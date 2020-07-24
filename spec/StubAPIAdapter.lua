@@ -180,7 +180,81 @@ local stub_recipes = {
       { amount=15, name="sulfuric-acid", type="fluid" }
     },
     products={ { amount=50, name="crystal-slurry", type="fluid" } }
-  }
+  },
+  ["hotair-iron-plate-1"] = {
+    ingredients = {
+      { amount = 100, name = "molten-iron", type = "fluid" },
+      { amount = 3, name = "borax", type = "item" },
+      { amount = 1, name = "sand-casting", type = "item" },
+      { amount = 50, name = "hot-air", type = "fluid" }
+    },
+    products = {
+      { amount = 75, name = "iron-plate", type = "item" }
+    }
+  },
+  ["molten-iron-06"] = {
+    ingredients = {
+      { amount = 1, name = "unslimed-iron", type = "item" },
+      { amount = 3, name = "borax", type = "item" },
+      { amount = 60, name = "oxygen", type = "fluid" }
+    },
+    products = {
+      { amount = 40, name = "molten-iron", type = "fluid" }
+    }
+  },
+  ["unslimed-iron"] = {
+    ingredients = {
+      { amount = 100, name = "iron-slime", type = "fluid" },
+      { amount = 200, name = "water", type = "fluid" }
+    },
+    products = {
+      { amount = 100, name = "dirty-water", type = "fluid" },
+      { amount = 1, name = "unslimed-iron", type = "item" }
+    }
+  },
+  ["unslimed-iron-2"] = {
+    ingredients = {
+      { amount = 300, name = "iron-pulp-01", type = "fluid" },
+      { amount = 200, name = "water", type = "fluid" }
+    },
+    products = {
+      { amount = 100, name = "dirty-water", type = "fluid" },
+      { amount = 1, name = "unslimed-iron", type = "item" }
+    }
+  },
+  ["classify-iron-ore-dust"] = {
+    ingredients = {
+      { amount = 3, name = "iron-ore-dust", type = "item" },
+      { amount = 300, name = "water", type = "fluid" }
+    },
+    products = {
+      { amount = 50, name = "iron-pulp-01", type = "fluid" },
+      { amount = 50, name = "iron-slime", type = "fluid" }
+    }
+  },
+  ["iron-ore-dust"] = {
+    ingredients = { { amount = 1, name = "grade-1-iron", type = "item" } },
+    products = { { amount = 1, name = "iron-ore-dust", type = "item" } }
+  },
+  ["grade-2-crush"] = {
+    ingredients = { { amount = 1, name = "grade-2-iron", type = "item" } },
+    products = {
+      { amount = 1, name = "gravel", probability = 0.5, type = "item" },
+      { amount = 1, name = "grade-1-iron", type = "item" }
+    }
+  },
+  ["grade-3-iron-processing"] = {
+    ingredients = { { amount = 1, name = "grade-3-iron", type = "item" } },
+    products = { { amount = 1, name = "grade-2-iron", type = "item" } }
+  },
+  ["grade-2-iron"] = {
+    ingredients = { { amount = 5, name = "processed-iron-ore", type = "item" } },
+    products = {
+      { amount = 1, name = "grade-1-iron", type = "item" },
+      { amount = 1, name = "grade-2-iron", probability = 0.5, type = "item" },
+      { amount = 1, name = "grade-3-iron", probability = 0.5, type = "item" }
+    }
+  },
 }
 
 local StubAPIAdapter = {}
