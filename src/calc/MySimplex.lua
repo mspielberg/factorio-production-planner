@@ -113,14 +113,13 @@ local function select_entering_variable_bland(self)
   return current_column_index
 end
 
-local zero = 0
 local function select_exiting_variable(self, entering_column_index)
   local most_pessimistic = math.huge
   local exiting_row_index
   local exiting_variable_index
 
   local function is_improvement_on(candidate, candidate_index)
-    return candidate >= zero and
+    return candidate >= -TOL and
     (most_pessimistic == nil or
       candidate < most_pessimistic or
       candidate == most_pessimistic and candidate_index < exiting_variable_index)
