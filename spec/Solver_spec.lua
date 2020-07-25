@@ -1,3 +1,4 @@
+require 'busted.runner'()
 if os.getenv("LOCAL_LUA_DEBUGGER_VSCODE") == "1" then
   require "lldebugger".start()
 end
@@ -29,6 +30,23 @@ local function dump_model(model)
   end
   return table.concat(rows, "\n")
 end
+
+local function dump_costs(model)
+  local out = {}
+  for i=1, #model.costs do
+    out[#out+1] = model.descriptions[i].."\t"..model.costs[i]
+  end
+  return table.concat(out, "\n")
+end
+
+local function dump_result(result, model)
+  local out = {}
+  for i=1, #result do
+    out[#out+1] = model.descriptions[i].."\t"..result[i]
+  end
+  return table.concat(out, "\n")
+end
+
 
 describe("The Solver should", function()
   it("handle simple green circuits", function()
@@ -85,4 +103,49 @@ describe("The Solver should", function()
       end
     end
   end)
+
+  describe("Optimize Angel's Refining", function()
+    it("handle Py slimed iron smelting", function()
+      local line = Line.restore(test_lines.angels_refining)
+      line.constraints = {
+        ["item/iron-ore"] = 15,
+        ["item/copper-ore"] = 15,
+        ["item/tin-ore"] = 15,
+        ["item/nickel-ore"] = 15,
+        ["item/quartz"] = 15,
+        ["item/gold-ore"] = 15,
+        ["item/silver-ore"] = 15,
+        --[[
+        ["item/cobalt-ore"] = 0,
+        ["item/rutile-ore"] = 0,
+        ["item/bauxite-ore"] = 0,
+        ["item/zinc-ore"] = 0,
+        ["item/fluorite-ore"] = 0,
+        ["item/tungsten-ore"] = 0,
+        ["item/platinum-ore"] = 0,
+        ["item/uranium-ore"] = 0,
+        ["item/thorium-ore"] = 0,
+        --]]
+      }
+      local cost_overrides = {
+        ["item/angels-ore1"] = -0,
+        ["item/angels-ore2"] = -0,
+        ["item/angels-ore3"] = -0,
+        ["item/angels-ore4"] = -0,
+        ["item/angels-ore5"] = -0,
+        ["item/angels-ore6"] = -0,
+      }
+      local result, model = Solver.solve(line, cost_overrides)
+      print(dump_costs(model))
+      print(dump_result(result, model))
+      local expected = {
+      }
+      for i=1,#result do
+        if expected[model.descriptions[i]] then
+          assert.are.same(expected[model.descriptions[i]], round(result[i], 3))
+        end
+      end
+    end)
+  end)
 end)
+

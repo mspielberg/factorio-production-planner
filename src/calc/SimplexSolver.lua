@@ -43,7 +43,9 @@ local function table_size(t)
   return i
 end
 
-local function model_from_line(line)
+local function model_from_line(line, cost_overrides)
+  cost_overrides = cost_overrides or {}
+
   local nsteps = #line.steps
   local components = component_rates(line)
   local coefficients = {}
@@ -79,7 +81,9 @@ local function model_from_line(line)
     if not line.constraints[component] then
       slack_index = slack_index + 1
       row[slack_index] = -1
-      if has_pos_and_neg(rates) then
+      if cost_overrides[component] then
+        costs[slack_index] = cost_overrides[component]
+      elseif has_pos_and_neg(rates) then
         costs[slack_index] = -1e9
       end
       descriptions[slack_index] = "input_"..component
@@ -90,18 +94,19 @@ local function model_from_line(line)
   end
 
   local component_index = slack_index
-  for component in pairs(components) do
+  for _, component in pairs(components) do
     component_index = component_index + 1
-    descriptions[component_index] = "excess_"..component
+    descriptions[component_index] = "excess_"..component[1]
   end
 
   local out = MySimplex.new(costs, coefficients, constants)
+  out.costs = costs
   out.descriptions = descriptions
   return out
 end
 
-local function solve(line, trace)
-  local model = model_from_line(line)
+local function solve(line, cost_overrides, trace)
+  local model = model_from_line(line, cost_overrides)
   return MySimplex.solve(model, nil, trace), model
 end
 
